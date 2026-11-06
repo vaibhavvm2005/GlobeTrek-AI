@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Search Results for "{{ q }}" – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <h2 class="fw-bold font-serif mb-1">Search Results</h2>
+    <p class="text-white-50 small mb-0">Found {{ destinations|length }} attractions and {{ events|length }} events for <strong class="text-white">"{{ q }}"</strong></p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  
+  <!-- Destinations Section -->
+  <div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold text-navy font-serif mb-0"><i class="bi bi-geo-alt-fill text-teal me-1"></i> Matching Tourist Attractions ({{ destinations|length }})</h4>
+    </div>
+
+    {% if destinations %}
+      <div class="row g-4">
+        {% for dest in destinations %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-hover h-100 bg-white">
+              <div class="card-img-placeholder">
+                {% set img_list = dest.to_dict().images %}
+                {% if img_list and img_list|length > 0 %}
+                  <img src="{{ img_list[0] }}" alt="{{ dest.name }}" loading="lazy">
+                {% else %}
+                  <div class="text-white display-4 font-serif">{{ dest.name[:1] }}</div>
+                {% endif %}
+              </div>
+              <div class="card-body p-4 d-flex flex-column">
+                <span class="text-teal small mb-1"><i class="bi bi-geo-alt"></i> {{ dest.city }}, {{ dest.country }}</span>
+                <h5 class="fw-bold text-navy font-serif mb-2">{{ dest.name }}</h5>
+                <p class="text-muted small mb-3 flex-grow-1">{{ dest.description[:100] }}...</p>
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                  <span class="fw-bold text-dark font-monospace fs-5">₹{{ "%.0f"|format(dest.ticket_price) }}</span>
+                  <a href="{{ url_for('main.destination_detail', id=dest.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">View Details</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted small">No tourist destinations matched "{{ q }}".</p>
+    {% endif %}
+  </div>
+
+  <!-- Events Section -->
+  <div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold text-navy font-serif mb-0"><i class="bi bi-calendar-event-fill text-orange me-1"></i> Matching Live Events ({{ events|length }})</h4>
+    </div>
+
+    {% if events %}
+      <div class="row g-4">
+        {% for ev in events %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card card-hover h-100 bg-white">
+              <div class="card-img-placeholder">
+                {% if ev.image %}
+                  <img src="{{ ev.image }}" alt="{{ ev.title }}" loading="lazy">
+                {% else %}
+                  <div class="text-white display-4 font-serif">{{ ev.title[:1] }}</div>
+                {% endif %}
+                <span class="position-absolute top-0 start-0 m-3 badge bg-orange text-white">
+                  {{ ev.event_date.strftime('%d %b %Y') if ev.event_date else 'TBD' }}
+                </span>
+              </div>
+              <div class="card-body p-4 d-flex flex-column">
+                <span class="text-muted small mb-1">{{ ev.venue_name or ev.city }}, {{ ev.country }}</span>
+                <h5 class="fw-bold text-navy font-serif mb-2">{{ ev.title }}</h5>
+                <p class="text-muted small mb-3 flex-grow-1">{{ ev.description[:100] }}...</p>
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                  {% set t_first = ev.ticket_types.first() %}
+                  <span class="fw-bold text-dark font-monospace fs-5">₹{{ "%.0f"|format(t_first.price) if t_first else '999' }}</span>
+                  <a href="{{ url_for('main.event_detail', id=ev.id) }}" class="btn btn-orange btn-sm rounded-pill px-3">Book Tickets</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted small">No scheduled events matched "{{ q }}".</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+

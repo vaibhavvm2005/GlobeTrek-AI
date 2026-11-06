@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Global Events &amp; Stadium Concerts – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <h2 class="fw-bold font-serif mb-1">Global Events, Stadiums &amp; Concerts</h2>
+        <p class="text-white-50 small mb-0">Book official tickets for music festivals, cricket, football, conferences, and arena tours</p>
+      </div>
+      <nav aria-label="breadcrumb" class="mt-2 mt-md-0">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active text-orange" aria-current="page">Events</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-navy mb-0"><i class="bi bi-funnel me-1 text-orange"></i> Event Filters</h5>
+          <a href="{{ url_for('main.events') }}" class="small text-muted text-decoration-none">Reset</a>
+        </div>
+
+        <form action="{{ url_for('main.events') }}" method="GET">
+          <!-- Keyword -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Search Event or Artist</label>
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="e.g. Coldplay, Cricket..." value="{{ filters.q or '' }}">
+          </div>
+
+          <!-- Country -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Country</label>
+            <select name="country" class="form-select form-select-sm">
+              <option value="">All Countries</option>
+              {% for c in countries %}
+                <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Event Type</label>
+            <select name="category" class="form-select form-select-sm">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if filters.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Max Budget -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Max Ticket Price (₹)</label>
+            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="e.g. 10000" value="{{ filters.max_price or '' }}">
+          </div>
+
+          <!-- Sort Order -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark">Sort By</label>
+            <select name="sort" class="form-select form-select-sm">
+              <option value="upcoming" {% if filters.sort == 'upcoming' %}selected{% endif %}>Soonest First (Date)</option>
+              <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+              <option value="title" {% if filters.sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-orange btn-sm w-100 rounded-pill py-2">
+            Apply Filters
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">Showing <strong>{{ events.items|length }}</strong> upcoming events</span>
+      </div>
+
+      {% if events.items %}
+        <div class="row g-4">
+          {% for ev in events.items %}
+            <div class="col-md-6">
+              <div class="card card-hover h-100 bg-white">
+                <div class="card-img-placeholder">
+                  {% if ev.image %}
+                    <img src="{{ ev.image }}" alt="{{ ev.title }}" loading="lazy">
+                  {% else %}
+                    <div class="text-white display-4 fw-bold font-serif">{{ ev.title[:1] }}</div>
+                  {% endif %}
+                  <span class="position-absolute top-0 start-0 m-3 badge bg-orange text-white shadow-sm font-monospace">
+                    <i class="bi bi-calendar3 me-1"></i> {{ ev.event_date.strftime('%d %b %Y') if ev.event_date else 'TBD' }}
+                  </span>
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                  <span class="badge bg-teal-subtle text-teal w-auto me-auto mb-2" style="font-size: 0.72rem;">
+                    {{ ev.category.name if ev.category else 'Live Event' }}
+                  </span>
+                  <h5 class="fw-bold text-navy font-serif mb-2">{{ ev.title }}</h5>
+                  <div class="text-muted small mb-2 d-flex align-items-center gap-1.5">
+                    <i class="bi bi-geo-alt-fill text-muted"></i>
+                    <span>{{ ev.venue_name or ev.city }}, {{ ev.country }}</span>
+                  </div>
+                  <p class="text-muted small mb-3 flex-grow-1">{{ ev.description[:100] }}...</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                    <div>
+                      <small class="text-muted d-block" style="font-size: 0.72rem;">Starts from</small>
+                      {% set t_first = ev.ticket_types.first() %}
+                      <strong class="text-dark font-monospace fs-5">₹{{ "%.0f"|format(t_first.price) if t_first else '999' }}</strong>
+                    </div>
+                    <a href="{{ url_for('main.event_detail', id=ev.id) }}" class="btn btn-orange btn-sm rounded-pill px-3">
+                      Book Tickets <i class="bi bi-ticket-perforated ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if events.pages > 1 %}
+          <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+              {% if events.has_prev %}
+                <li class="page-item">
+                  <a class="page-link text-orange" href="{{ url_for('main.events', page=events.prev_num, **filters) }}">Previous</a>
+                </li>
+              {% endif %}
+              
+              {% for p in range(1, events.pages + 1) %}
+                <li class="page-item {% if p == events.page %}active{% endif %}">
+                  <a class="page-link {% if p == events.page %}bg-orange border-orange text-white{% else %}text-orange{% endif %}"
+                     href="{{ url_for('main.events', page=p, **filters) }}">{{ p }}</a>
+                </li>
+              {% endfor %}
+
+              {% if events.has_next %}
+                <li class="page-item">
+                  <a class="page-link text-orange" href="{{ url_for('main.events', page=events.next_num, **filters) }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+          <div class="display-4 text-muted mb-3"><i class="bi bi-calendar-x"></i></div>
+          <h4 class="fw-bold text-navy">No scheduled events matched your search</h4>
+          <p class="text-muted small mb-4">Try broadening your date window, clearing filters, or exploring other categories.</p>
+          <div>
+            <a href="{{ url_for('main.events') }}" class="btn btn-orange rounded-pill px-4">Clear All Filters</a>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

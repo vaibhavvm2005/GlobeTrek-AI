@@ -1,0 +1,17 @@
+{
+  "name": "WAYFARER AI",
+  "short_name": "WAYFARER",
+  "description": "Discover experiences and access your WAYFARER tickets offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f4ec",
+  "theme_color": "#10261d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

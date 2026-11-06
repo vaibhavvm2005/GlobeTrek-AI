@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Create Account – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        
+        <div class="text-center mb-4">
+          <div class="display-6 mb-2">🌍</div>
+          <h3 class="fw-bold text-navy">Join GlobeTrek AI</h3>
+          <p class="text-muted small">Discover global landmarks and book verified event tickets</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Role Selection -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark mb-2">I am signing up as:</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="radio" class="btn-check" name="role" id="roleCustomer" value="CUSTOMER" checked>
+                <label class="btn btn-outline-teal w-100 py-2.5 rounded-3 d-flex flex-column align-items-center" for="roleCustomer">
+                  <i class="bi bi-person-fill fs-5 mb-1"></i>
+                  <span class="small fw-semibold">Traveler / Customer</span>
+                </label>
+              </div>
+              <div class="col-6">
+                <input type="radio" class="btn-check" name="role" id="roleOrganizer" value="ORGANIZER">
+                <label class="btn btn-outline-teal w-100 py-2.5 rounded-3 d-flex flex-column align-items-center" for="roleOrganizer">
+                  <i class="bi bi-calendar-event fs-5 mb-1"></i>
+                  <span class="small fw-semibold">Event Organizer</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-dark">Full Legal Name</label>
+              <input type="text" name="full_name" class="form-control" placeholder="e.g. Maya Chen" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Username</label>
+              <input type="text" name="username" class="form-control" placeholder="e.g. mayachen" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Contact Phone</label>
+              <input type="tel" name="phone" class="form-control" placeholder="+91 98450 12345">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-dark">Email Address</label>
+              <input type="email" name="email" class="form-control" placeholder="name@domain.com" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Password</label>
+              <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Confirm Password</label>
+              <input type="password" name="confirm_password" class="form-control" placeholder="Repeat password" required>
+            </div>
+          </div>
+
+          <div class="form-check my-4">
+            <input class="form-check-input" type="checkbox" id="terms" required checked>
+            <label class="form-check-label small text-muted" for="terms">
+              I agree to the <a href="#" class="text-teal text-decoration-none">Terms of Service</a> &amp; <a href="#" class="text-teal text-decoration-none">Cancellation Policy</a>.
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-teal w-100 py-2.5 rounded-pill fw-semibold shadow-sm mb-3">
+            Create Free Account
+          </button>
+        </form>
+
+        <div class="text-center mt-3 pt-3 border-top">
+          <p class="small text-muted mb-0">Already have an account? 
+            <a href="{{ url_for('auth.login') }}" class="text-teal fw-semibold text-decoration-none">Sign In</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

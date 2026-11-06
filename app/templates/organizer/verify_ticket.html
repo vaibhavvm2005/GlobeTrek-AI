@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Turnstile Gate Scanner – Organizer Portal{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 text-uppercase font-monospace mb-2" style="font-size: 0.7rem;">
+          Gate Operations
+        </span>
+        <h2 class="fw-bold font-serif mb-1">Turnstile QR Check-in Terminal</h2>
+        <p class="text-white-50 small mb-0">Single-use gate verification with cryptographic HMAC validation &amp; anti-duplicate entry</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace">
+          <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.6rem;"></i> SCANNER READY (ONLINE)
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      
+      <!-- Scanner Card -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+        
+        <div class="text-center mb-4">
+          <div class="user-avatar rounded-circle bg-navy text-white d-flex align-items-center justify-content-center mx-auto mb-3 shadow" style="width: 68px; height: 68px; font-size: 1.8rem;">
+            <i class="bi bi-qr-code-scan"></i>
+          </div>
+          <h4 class="fw-bold text-navy font-serif mb-1">Scan Admission Pass</h4>
+          <p class="text-muted small">Enter ticket token, UID, or barcode payload from attendee mobile wallet</p>
+        </div>
+
+        <form id="verifyForm">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Ticket Token / UID</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-upc-scan text-muted"></i></span>
+              <input type="text" id="qrTokenInput" name="qr_token" class="form-control border-start-0 font-monospace" placeholder="e.g. TKT:a8f9b2... or 32-char UID" required autofocus>
+              <button type="submit" id="verifyBtn" class="btn btn-teal px-4 fw-semibold">
+                Verify Pass <i class="bi bi-check-lg ms-1"></i>
+              </button>
+            </div>
+            <small class="text-muted" style="font-size: 0.72rem;">Accepts cryptographic HMAC strings or alphanumeric ticket UIDs.</small>
+          </div>
+        </form>
+
+        <!-- Dynamic Result Display Container -->
+        <div id="scanResultContainer" class="mt-4" style="display: none;"></div>
+
+      </div>
+
+      <!-- Quick Test Tokens Card -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h6 class="fw-bold text-navy mb-2"><i class="bi bi-info-circle text-teal me-1"></i> Turnstile Validation Rules</h6>
+        <ul class="small text-muted mb-0 space-y-1">
+          <li><strong>Zero Duplicate Entry:</strong> Passes can only be admitted once. A second presentation is rejected with an <span class="badge bg-danger-subtle text-danger">ALREADY_USED</span> alert showing exact prior turnstile time.</li>
+          <li><strong>HMAC Signature Integrity:</strong> Any tampered ticket payloads fail cryptographic verification.</li>
+          <li><strong>Single Transaction Commit:</strong> Status transition to <span class="badge bg-secondary-subtle text-secondary">USED</span> is atomically persisted.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const token = document.getElementById('qrTokenInput').value.trim();
+  const resultDiv = document.getElementById('scanResultContainer');
+  const verifyBtn = document.getElementById('verifyBtn');
+
+  if (!token) return;
+
+  verifyBtn.disabled = true;
+  verifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Checking...';
+
+  try {
+    const response = await fetch('/api/ticket/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ qr_token: token })
+    });
+
+    const data = await response.json();
+    resultDiv.style.display = 'block';
+
+    if (data.valid && data.result === 'VALID') {
+      const t = data.ticket || {};
+      resultDiv.innerHTML = `
+        <div class="p-4 rounded-4 bg-success-subtle border border-success animate-fade-in text-center">
+          <div class="user-avatar rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
+            <i class="bi bi-check2"></i>
+          </div>
+          <h4 class="fw-bold text-success mb-1">ENTRY GRANTED (VALID PASS)</h4>
+          <p class="small text-success mb-3">${data.message || 'Ticket verified and marked as USED.'}</p>
+          <div class="bg-white p-3 rounded-3 text-start small">
+            <div class="row g-2">
+              <div class="col-6"><span class="text-muted d-block" style="font-size:0.7rem;">VISITOR:</span><strong>${t.holder_name || 'Holder'}</strong></div>
+              <div class="col-6"><span class="text-muted d-block" style="font-size:0.7rem;">EVENT:</span><strong>${t.event_title || 'Experience'}</strong></div>
+              <div class="col-6"><span class="text-muted d-block" style="font-size:0.7rem;">TIER:</span><span class="badge bg-light text-dark border">${t.ticket_type_name || 'General'}</span></div>
+              <div class="col-6"><span class="text-muted d-block" style="font-size:0.7rem;">SEAT:</span><strong>${t.seat_info || 'General Admission'}</strong></div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (data.result === 'ALREADY_USED') {
+      resultDiv.innerHTML = `
+        <div class="p-4 rounded-4 bg-danger-subtle border border-danger animate-fade-in text-center">
+          <div class="user-avatar rounded-circle bg-danger text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
+            <i class="bi bi-x-lg"></i>
+          </div>
+          <h4 class="fw-bold text-danger mb-1">DUPLICATE ENTRY REJECTED!</h4>
+          <p class="small text-danger fw-semibold mb-2">This ticket has ALREADY BEEN SCANNED and marked as USED.</p>
+          <p class="small text-muted mb-0">${data.message || 'Duplicate scan detected. Do not permit entry.'}</p>
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `
+        <div class="p-4 rounded-4 bg-danger-subtle border border-danger animate-fade-in text-center">
+          <div class="user-avatar rounded-circle bg-danger text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
+            <i class="bi bi-slash-circle"></i>
+          </div>
+          <h4 class="fw-bold text-danger mb-1">INVALID TICKET PASS</h4>
+          <p class="small text-danger mb-0">${data.message || 'Signature verification failed or ticket not found in database.'}</p>
+        </div>
+      `;
+    }
+  } catch (err) {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div class="alert alert-danger rounded-3 small">
+        <i class="bi bi-exclamation-octagon me-1"></i> Network error during turnstile verification.
+      </div>
+    `;
+  } finally {
+    verifyBtn.disabled = false;
+    verifyBtn.innerHTML = 'Verify Pass <i class="bi bi-check-lg ms-1"></i>';
+  }
+});
+</script>
+{% endblock %}
+

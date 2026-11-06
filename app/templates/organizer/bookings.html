@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Attendee Bookings – Organizer Portal{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <h2 class="fw-bold font-serif mb-1">Attendee Booking Register</h2>
+    <p class="text-white-50 small mb-0">Master record of ticket purchases across your organized events</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    {% if bookings.items %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light small text-muted">
+            <tr>
+              <th>Ref ID</th>
+              <th>Customer</th>
+              <th>Event</th>
+              <th>Schedule</th>
+              <th>Tickets</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings.items %}
+              <tr>
+                <td><span class="font-monospace fw-semibold text-dark">#{{ b.booking_ref[:8] }}...</span></td>
+                <td>
+                  <strong class="text-dark small d-block">{{ b.customer_name }}</strong>
+                  <small class="text-muted" style="font-size: 0.72rem;">{{ b.customer_email }}</small>
+                </td>
+                <td class="small">{{ b.item_name }}</td>
+                <td class="small text-muted">{{ b.visit_date }}</td>
+                <td><span class="badge bg-light text-dark border">{{ b.items|length }} ticket(s)</span></td>
+                <td class="font-monospace fw-bold small">₹{{ "%.2f"|format(b.grand_total) }}</td>
+                <td>
+                  <span class="badge rounded-pill {% if b.status == 'CONFIRMED' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                    {{ b.status }}
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <p class="small mb-0">No attendee reservations have been logged yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

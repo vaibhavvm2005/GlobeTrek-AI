@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}{{ destination.name }} – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2 small">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.destinations') }}" class="text-white-50 text-decoration-none">Destinations</a></li>
+        <li class="breadcrumb-item active text-teal" aria-current="page">{{ destination.name }}</li>
+      </ol>
+    </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <h1 class="display-6 fw-bold font-serif mb-1">{{ destination.name }}</h1>
+        <div class="d-flex align-items-center gap-2 text-white-75 small">
+          <i class="bi bi-geo-alt-fill text-teal"></i>
+          <span>{{ destination.address or (destination.city ~ ', ' ~ destination.country) }}</span>
+          <span>•</span>
+          <span class="badge bg-white bg-opacity-15 text-white">{{ destination.category.name if destination.category else 'Attraction' }}</span>
+        </div>
+      </div>
+      <div>
+        <a href="{{ url_for('booking.select_tickets', type='destination', id=destination.id) }}" class="btn btn-teal btn-lg rounded-pill px-4 shadow">
+          <i class="bi bi-ticket-perforated me-1"></i> Book Entry Tickets
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Main Left Column -->
+    <div class="col-lg-8">
+      
+      <!-- Image Gallery -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+        {% set img_list = destination.to_dict().images %}
+        {% if img_list and img_list|length > 0 %}
+          <img src="{{ img_list[0] }}" alt="{{ destination.name }}" class="w-100 object-cover" style="max-height: 440px;" loading="lazy">
+        {% else %}
+          <div class="p-5 text-center bg-teal text-white font-serif display-1">{{ destination.name[:1] }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Description & Overview -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <h4 class="fw-bold text-navy font-serif mb-3">About this Landmark</h4>
+        <p class="text-secondary leading-relaxed mb-4" style="line-height: 1.8;">
+          {{ destination.description }}
+        </p>
+
+        <h5 class="fw-bold text-navy mb-3">Visitor Information &amp; Amenities</h5>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+              <i class="bi bi-clock text-teal fs-4"></i>
+              <div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">OPERATING HOURS</small>
+                <strong class="text-dark small">{{ destination.opening_hours }}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+              <i class="bi bi-people text-teal fs-4"></i>
+              <div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">DAILY QUOTA</small>
+                <strong class="text-dark small">{{ destination.capacity }} Visitors / Day</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Traveler Reviews -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-bold text-navy font-serif mb-0">Verified Reviews</h4>
+          <span class="badge bg-teal px-3 py-1.5 rounded-pill"><i class="bi bi-star-fill text-warning me-1"></i> {{ destination.rating }} / 5.0</span>
+        </div>
+
+        {% if reviews %}
+          <div class="d-flex flex-column gap-3">
+            {% for r in reviews %}
+              <div class="p-3 bg-light rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-dark small">{{ r.user.full_name if r.user else 'Verified Traveler' }}</strong>
+                  <div class="text-warning small">
+                    {% for _ in range(r.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                  </div>
+                </div>
+                <p class="text-muted small mb-0">{{ r.comment }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">No reviews submitted yet for this attraction.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right Column: Ticket Tiers & Booking CTA -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        <h5 class="fw-bold text-navy mb-3">Available Ticket Options</h5>
+        
+        <div class="d-flex flex-column gap-2 mb-4">
+          {% for tt in ticket_types %}
+            <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center bg-light">
+              <div>
+                <strong class="d-block text-dark small fw-bold">{{ tt.name }}</strong>
+                <small class="text-muted" style="font-size: 0.72rem;">{{ tt.description or 'Official verified admission' }}</small>
+                <div class="mt-1">
+                  <span class="badge bg-success-subtle text-success font-monospace" style="font-size: 0.65rem;">
+                    {{ tt.quantity_available }} available
+                  </span>
+                </div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-navy fs-6 font-monospace">₹{{ "%.0f"|format(tt.price) }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('booking.select_tickets', type='destination', id=destination.id) }}" class="btn btn-teal py-2.5 rounded-pill fw-semibold shadow-sm">
+            <i class="bi bi-calendar-check me-1"></i> Proceed to Ticket Selection
+          </a>
+          <button class="btn btn-outline-teal btn-sm rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#chatModal">
+            <i class="bi bi-stars text-warning me-1"></i> Ask AI about this destination
+          </button>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="small text-muted">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-shield-check text-teal"></i>
+            <span>100% Guaranteed Official Digital Passes</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-clock-history text-teal"></i>
+            <span>Instant Digital QR Code Issuance</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-counterclockwise text-teal"></i>
+            <span>Flexible Cancellation up to 48h prior</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

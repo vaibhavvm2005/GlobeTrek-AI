@@ -1,0 +1,1 @@
+# GlobeTrek AI – Service layer

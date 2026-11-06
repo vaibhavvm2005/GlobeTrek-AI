@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}All Experiences – 80+ Global Attractions & Events – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<!-- ========================================================================= -->
+<!-- HERO BANNER                                                               -->
+<!-- ========================================================================= -->
+<div class="bg-navy text-white py-4 py-md-5 mb-4 position-relative overflow-hidden">
+  <div class="container position-relative z-1">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active text-teal" aria-current="page">All Experiences</li>
+      </ol>
+    </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <span class="badge bg-orange text-white rounded-pill px-2.5 py-1 text-uppercase font-monospace mb-1" style="font-size: 0.68rem;">
+          Unified Global Catalog
+        </span>
+        <h1 class="fw-bold font-serif mb-1 text-white">All Curated Experiences</h1>
+        <p class="text-white-50 small mb-0" style="max-width: 650px;">
+          Explore over 80+ premier attractions, concerts, sports tournaments, theme parks, and cultural festivals across 15+ countries worldwide.
+        </p>
+      </div>
+      <div class="text-md-end">
+        <span class="badge bg-white text-navy px-3 py-2 rounded-pill shadow-xs fs-6 font-monospace">
+          <i class="bi bi-globe-americas text-teal me-1"></i> {{ experiences.total }} Experiences Active
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- CATEGORY FILTER CHIPS                                                     -->
+<!-- ========================================================================= -->
+<div class="container mb-4">
+  <div class="d-flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+    <a href="{{ url_for('main.experiences') }}" 
+       class="btn btn-sm rounded-pill px-3 text-nowrap {% if not filters.category %}btn-teal text-white shadow-xs fw-bold{% else %}btn-white border text-dark{% endif %}">
+      <i class="bi bi-grid-fill me-1"></i> All Categories ({{ experiences.total }})
+    </a>
+    {% for c in categories %}
+      <a href="{{ url_for('main.experiences', category=c.slug, q=filters.q or '', country=filters.country or '', max_price=filters.max_price or '', sort=filters.sort or '') }}" 
+         class="btn btn-sm rounded-pill px-3 text-nowrap {% if filters.category == c.slug %}btn-teal text-white shadow-xs fw-bold{% else %}btn-white border text-dark{% endif %}">
+        <i class="bi {{ c.icon or 'bi-tag' }} me-1"></i> {{ c.name }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-navy mb-0"><i class="bi bi-funnel me-1 text-teal"></i> Filters</h5>
+          <a href="{{ url_for('main.experiences') }}" class="small text-muted text-decoration-none">Reset All</a>
+        </div>
+
+        <form action="{{ url_for('main.experiences') }}" method="GET">
+          <!-- Keyword -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Keyword</label>
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="Experience name, city, landmark..." value="{{ filters.q or '' }}">
+          </div>
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Category</label>
+            <select name="category" class="form-select form-select-sm">
+              <option value="">All Categories</option>
+              {% for c in categories %}
+                <option value="{{ c.slug }}" {% if filters.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Country -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Country</label>
+            <select name="country" class="form-select form-select-sm">
+              <option value="">All Countries</option>
+              {% for c in countries %}
+                <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- City -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">City</label>
+            <input type="text" name="city" class="form-control form-control-sm" placeholder="e.g. Paris, London, Bengaluru..." value="{{ filters.city or '' }}">
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Max Budget (₹)</label>
+            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="e.g. 5000" value="{{ filters.max_price or '' }}">
+          </div>
+
+          <!-- Dates for festivals/events -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">From Date</label>
+            <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from or '' }}">
+          </div>
+
+          <!-- Sort Order -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark">Sort By</label>
+            <select name="sort" class="form-select form-select-sm">
+              <option value="rating" {% if filters.sort == 'rating' %}selected{% endif %}>Highest Rated / Popularity</option>
+              <option value="price_low" {% if filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_high" {% if filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+              <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>Alphabetical (A-Z)</option>
+              <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Recently Added</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-teal btn-sm w-100 rounded-pill py-2 shadow-xs">
+            <i class="bi bi-search me-1"></i> Filter Results
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">Showing <strong>{{ experiences.items|length }}</strong> of <strong>{{ experiences.total }}</strong> global experiences</span>
+        {% if filters.category or filters.country or filters.q %}
+          <a href="{{ url_for('main.experiences') }}" class="small text-danger text-decoration-none">
+            <i class="bi bi-x-circle me-1"></i> Clear Filters
+          </a>
+        {% endif %}
+      </div>
+
+      {% if experiences.items %}
+        <div class="row g-4">
+          {% for exp in experiences.items %}
+            <div class="col-md-6">
+              <div class="card card-hover h-100 bg-white border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column">
+                
+                <!-- Image Header -->
+                <div class="card-img-placeholder position-relative" style="height: 220px; overflow: hidden;">
+                  {% if exp.image_url %}
+                    <img src="{{ exp.image_url }}" alt="{{ exp.experience_name }}" class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
+                  {% else %}
+                    <div class="text-white display-4 fw-bold font-serif d-flex align-items-center justify-content-center h-100 bg-secondary">
+                      {{ exp.experience_name[:1] }}
+                    </div>
+                  {% endif %}
+                  
+                  <!-- Top Badges -->
+                  <div class="position-absolute top-0 start-0 m-3 d-flex gap-1.5 flex-wrap">
+                    <span class="badge bg-navy text-white shadow-sm" style="font-size: 0.72rem;">
+                      {{ exp.category.name if exp.category else 'Experience' }}
+                    </span>
+                    {% if exp.booking_enabled %}
+                      <span class="badge bg-teal text-white shadow-sm" style="font-size: 0.72rem;">
+                        <i class="bi bi-lightning-charge-fill me-0.5"></i> Instant Book
+                      </span>
+                    {% else %}
+                      <span class="badge bg-secondary text-white shadow-sm" style="font-size: 0.72rem;">
+                        Discovery
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <span class="position-absolute top-0 end-0 m-3 badge bg-white text-dark shadow-sm">
+                    <i class="bi bi-star-fill text-warning me-1"></i> {{ exp.rating }} <span class="text-muted fw-normal">({{ exp.review_count }})</span>
+                  </span>
+                </div>
+
+                <!-- Card Content -->
+                <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                  <div class="d-flex align-items-center gap-1.5 text-muted small mb-2">
+                    <i class="bi bi-geo-alt-fill text-teal"></i>
+                    <span class="fw-medium text-dark">{{ exp.city }}, {{ exp.country }}</span>
+                    {% if exp.location and exp.location != exp.city %}
+                      <span class="text-muted text-xs ms-1">· {{ exp.location[:24] }}</span>
+                    {% endif %}
+                  </div>
+
+                  <h5 class="fw-bold text-navy font-serif mb-2 line-clamp-1" title="{{ exp.experience_name }}">
+                    {{ exp.experience_name }}
+                  </h5>
+                  
+                  <p class="text-muted small mb-3 flex-grow-1 line-clamp-3" style="line-height: 1.45;">
+                    {{ exp.description }}
+                  </p>
+
+                  {% if exp.event_date %}
+                    <div class="d-flex align-items-center gap-2 mb-3 text-xs text-secondary font-monospace bg-light rounded-pill px-3 py-1">
+                      <i class="bi bi-calendar-event text-orange"></i> Scheduled: {{ exp.event_date.strftime('%d %b %Y') }}
+                    </div>
+                  {% elif exp.opening_hours %}
+                    <div class="d-flex align-items-center gap-2 mb-3 text-xs text-muted font-monospace">
+                      <i class="bi bi-clock-history text-teal"></i> {{ exp.opening_hours }}
+                    </div>
+                  {% endif %}
+
+                  <!-- Price & Action Buttons -->
+                  <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                      <small class="text-muted d-block" style="font-size: 0.72rem;">Tickets from</small>
+                      <strong class="text-dark font-monospace fs-5">₹{{ "%.0f"|format(exp.ticket_price) }}</strong>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                      <a href="{{ url_for('main.experience_detail', id=exp.id) }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                        View Details
+                      </a>
+                      {% if exp.booking_enabled %}
+                        <a href="{{ url_for('booking.select_tickets', type='experience', id=exp.id) }}" class="btn btn-teal btn-sm rounded-pill px-3 text-nowrap shadow-xs">
+                          <i class="bi bi-ticket-perforated-fill me-1"></i> Book Now
+                        </a>
+                      {% else %}
+                        <button class="btn btn-light btn-sm rounded-pill px-3 text-muted text-nowrap" disabled>
+                          Explore
+                        </button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if experiences.pages > 1 %}
+          <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+              {% if experiences.has_prev %}
+                <li class="page-item">
+                  <a class="page-link text-teal" href="{{ url_for('main.experiences', page=experiences.prev_num, **filters) }}">Previous</a>
+                </li>
+              {% endif %}
+              
+              {% for p in range(1, experiences.pages + 1) %}
+                <li class="page-item {% if p == experiences.page %}active{% endif %}">
+                  <a class="page-link {% if p == experiences.page %}bg-teal border-teal text-white{% else %}text-teal{% endif %}"
+                     href="{{ url_for('main.experiences', page=p, **filters) }}">{{ p }}</a>
+                </li>
+              {% endfor %}
+
+              {% if experiences.has_next %}
+                <li class="page-item">
+                  <a class="page-link text-teal" href="{{ url_for('main.experiences', page=experiences.next_num, **filters) }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+          <div class="display-4 text-muted mb-3"><i class="bi bi-search"></i></div>
+          <h4 class="fw-bold text-navy">No experiences matched your filters</h4>
+          <p class="text-muted small mb-4">Try clearing one or more filters or browse all listings.</p>
+          <div>
+            <a href="{{ url_for('main.experiences') }}" class="btn btn-teal rounded-pill px-4">Clear All Filters</a>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

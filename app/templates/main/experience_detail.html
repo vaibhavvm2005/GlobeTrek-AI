@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}{{ experience.experience_name }} – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<!-- ========================================================================= -->
+<!-- BREADCRUMB & HERO HEADER                                                  -->
+<!-- ========================================================================= -->
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.experiences') }}" class="text-white-50 text-decoration-none">Experiences</a></li>
+        {% if experience.category %}
+          <li class="breadcrumb-item"><a href="{{ url_for('main.category_detail', slug=experience.category.slug) }}" class="text-white-50 text-decoration-none">{{ experience.category.name }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active text-teal" aria-current="page">{{ experience.experience_name[:32] }}...</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+          {% if experience.category %}
+            <span class="badge bg-teal text-white rounded-pill px-3 py-1 text-uppercase font-monospace" style="font-size: 0.7rem;">
+              <i class="bi {{ experience.category.icon }} me-1"></i> {{ experience.category.name }}
+            </span>
+          {% endif %}
+          {% if experience.booking_enabled %}
+            <span class="badge bg-orange text-white rounded-pill px-2.5 py-1 text-uppercase font-monospace" style="font-size: 0.7rem;">
+              <i class="bi bi-shield-check me-1"></i> Verified Ticket Booking
+            </span>
+          {% else %}
+            <span class="badge bg-secondary text-white rounded-pill px-2.5 py-1 text-uppercase font-monospace" style="font-size: 0.7rem;">
+              Discovery Only
+            </span>
+          {% endif %}
+        </div>
+        <h1 class="fw-bold font-serif mb-1 text-white">{{ experience.experience_name }}</h1>
+        <p class="text-white-50 small mb-0">
+          <i class="bi bi-geo-alt-fill text-teal me-1"></i> {{ experience.city }}, {{ experience.country }}
+          {% if experience.location %} &bull; <span class="text-white-50">{{ experience.location }}</span>{% endif %}
+        </p>
+      </div>
+
+      <div class="text-md-end">
+        <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-pill px-3 py-1.5 border border-white border-opacity-10">
+          <i class="bi bi-star-fill text-warning fs-5"></i>
+          <div>
+            <strong class="fs-5 text-white">{{ experience.rating }}</strong>
+            <small class="text-white-50 d-block" style="font-size: 0.72rem;">{{ experience.review_count }} ratings</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Left Column: Media & Overview -->
+    <div class="col-lg-8">
+      
+      <!-- Main Photo -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+        <div style="height: 420px; overflow: hidden;" class="position-relative">
+          {% if experience.image_url %}
+            <img src="{{ experience.image_url }}" alt="{{ experience.experience_name }}" class="w-100 h-100 object-fit-cover">
+          {% else %}
+            <div class="w-100 h-100 bg-secondary text-white display-1 fw-bold font-serif d-flex align-items-center justify-content-center">
+              {{ experience.experience_name[:1] }}
+            </div>
+          {% endif %}
+          <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-gradient-dark text-white d-flex justify-content-between align-items-center">
+            <span class="small font-monospace"><i class="bi bi-camera me-1"></i> Official Photograph</span>
+            <span class="badge bg-white text-dark shadow-sm">{{ experience.city }}, {{ experience.country }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience Description -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <h4 class="fw-bold text-navy font-serif mb-3">About This Experience</h4>
+        <p class="text-secondary" style="line-height: 1.7; font-size: 1.02rem;">
+          {{ experience.description }}
+        </p>
+
+        <hr class="my-4 text-muted opacity-25">
+
+        <h5 class="fw-bold text-navy font-serif mb-3">Experience Highlights &amp; Inclusions</h5>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="d-flex align-items-start gap-2.5 p-3 rounded-3 bg-light">
+              <i class="bi bi-qr-code text-teal fs-4"></i>
+              <div>
+                <strong class="text-navy d-block small">Instant Digital Pass</strong>
+                <span class="text-muted text-xs">HMAC-SHA256 signed QR ticket delivered instantly.</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-start gap-2.5 p-3 rounded-3 bg-light">
+              <i class="bi bi-shield-lock-fill text-teal fs-4"></i>
+              <div>
+                <strong class="text-navy d-block small">Anti-Scalp &amp; Turnstile Ready</strong>
+                <span class="text-muted text-xs">Cryptographic token verification rejects duplicate entry.</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-start gap-2.5 p-3 rounded-3 bg-light">
+              <i class="bi bi-hourglass-split text-teal fs-4"></i>
+              <div>
+                <strong class="text-navy d-block small">10-Minute Inventory Hold</strong>
+                <span class="text-muted text-xs">Locks your tickets securely during checkout.</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-start gap-2.5 p-3 rounded-3 bg-light">
+              <i class="bi bi-wallet2 text-teal fs-4"></i>
+              <div>
+                <strong class="text-navy d-block small">Secure Online Payment</strong>
+                <span class="text-muted text-xs">Razorpay and card payments supported.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Reviews -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4 class="fw-bold text-navy font-serif mb-1">Customer Reviews</h4>
+            <p class="text-muted small mb-0">Verified feedback from international travelers</p>
+          </div>
+          <span class="badge bg-teal-subtle text-teal rounded-pill px-3 py-1.5 fs-6 font-monospace">
+            ⭐ {{ experience.rating }} / 5.0
+          </span>
+        </div>
+
+        {% if reviews %}
+          <div class="d-flex flex-column gap-3">
+            {% for r in reviews %}
+              <div class="border-bottom pb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-dark small">{{ r.user.full_name if r.user else 'Verified Traveler' }}</strong>
+                  <div class="text-warning small">
+                    {% for _ in range(r.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                  </div>
+                </div>
+                <p class="text-muted small mb-0">{{ r.comment }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4 bg-light rounded-3">
+            <i class="bi bi-chat-heart text-teal fs-2 mb-2 d-block"></i>
+            <h6 class="fw-bold text-navy mb-1">Be the first to review this experience</h6>
+            <p class="text-muted text-xs mb-0">Book your tickets and share your trip story with the community.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right Column: Booking Box & Details -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        
+        <div class="d-flex justify-content-between align-items-baseline mb-3 pb-3 border-bottom">
+          <div>
+            <span class="text-muted small d-block" style="font-size: 0.72rem;">Starting from</span>
+            <span class="font-serif fw-bold text-navy fs-2">₹{{ "%.0f"|format(experience.ticket_price) }}</span>
+            <span class="text-muted small"> / person</span>
+          </div>
+          <span class="badge bg-success-subtle text-success font-monospace px-2.5 py-1">
+            <i class="bi bi-check-circle-fill me-1"></i> Available
+          </span>
+        </div>
+
+        <!-- Schedule / Hours -->
+        <div class="mb-4">
+          {% if experience.event_date %}
+            <div class="d-flex align-items-center gap-2 mb-2 small text-dark">
+              <i class="bi bi-calendar3 text-orange fs-5"></i>
+              <div>
+                <strong>Event Date:</strong>
+                <div class="text-muted font-monospace">{{ experience.event_date.strftime('%A, %d %B %Y') }}</div>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="d-flex align-items-center gap-2 small text-dark">
+            <i class="bi bi-clock-history text-teal fs-5"></i>
+            <div>
+              <strong>Opening Timings:</strong>
+              <div class="text-muted font-monospace">{{ experience.opening_hours or '09:00 – 18:00 Daily' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticket Categories -->
+        <div class="mb-4">
+          <label class="form-label small fw-bold text-navy mb-2">Available Ticket Tiers</label>
+          <div class="d-flex flex-column gap-2">
+            {% for tt in ticket_types %}
+              <div class="p-2.5 border rounded-3 d-flex justify-content-between align-items-center bg-light">
+                <div>
+                  <strong class="d-block small text-dark">{{ tt.name }}</strong>
+                  <span class="text-muted text-xs font-monospace">{{ tt.quantity_available }} left</span>
+                </div>
+                <strong class="text-teal font-monospace">₹{{ "%.0f"|format(tt.price) }}</strong>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Action CTA -->
+        {% if experience.booking_enabled %}
+          <a href="{{ url_for('booking.select_tickets', type='experience', id=experience.id) }}" class="btn btn-teal w-100 rounded-pill py-2.5 fw-bold shadow-xs mb-3 fs-6">
+            <i class="bi bi-ticket-perforated-fill me-1"></i> Book Tickets Now
+          </a>
+        {% else %}
+          <div class="alert alert-warning small rounded-3 mb-3 p-2.5 text-center">
+            <i class="bi bi-info-circle me-1"></i> This listing is in discovery mode. Direct online ticketing will open soon.
+          </div>
+        {% endif %}
+
+        <div class="text-center">
+          <small class="text-muted text-xs d-block">
+            <i class="bi bi-shield-check text-teal me-1"></i> 100% Verified Entry &bull; Instant Confirmation
+          </small>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Related Experiences from same Category -->
+  {% if related %}
+    <div class="mt-5 pt-4 border-top">
+      <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+          <span class="text-orange fw-bold text-uppercase small font-monospace">More Discoveries</span>
+          <h3 class="fw-bold text-navy font-serif mb-0">More in {{ experience.category.name if experience.category else 'this Category' }}</h3>
+        </div>
+        {% if experience.category %}
+          <a href="{{ url_for('main.category_detail', slug=experience.category.slug) }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+            View All in {{ experience.category.name }} <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="row g-4">
+        {% for rel in related %}
+          <div class="col-md-4">
+            <div class="card card-hover h-100 bg-white border-0 shadow-sm rounded-4 overflow-hidden">
+              <div style="height: 180px; overflow: hidden;" class="position-relative">
+                <img src="{{ rel.image_url }}" alt="{{ rel.experience_name }}" class="w-100 h-100 object-fit-cover" loading="lazy">
+                <span class="position-absolute top-0 end-0 m-2.5 badge bg-white text-dark shadow-sm">
+                  ⭐ {{ rel.rating }}
+                </span>
+              </div>
+              <div class="card-body p-3.5 d-flex flex-column">
+                <div class="small text-muted mb-1"><i class="bi bi-geo-alt-fill text-teal"></i> {{ rel.city }}, {{ rel.country }}</div>
+                <h6 class="fw-bold text-navy font-serif mb-2 line-clamp-1">{{ rel.experience_name }}</h6>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                  <span class="font-monospace fw-bold text-dark">₹{{ "%.0f"|format(rel.ticket_price) }}</span>
+                  <a href="{{ url_for('main.experience_detail', id=rel.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">View</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

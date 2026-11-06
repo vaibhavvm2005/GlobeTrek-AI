@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2 small">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.events') }}" class="text-white-50 text-decoration-none">Events</a></li>
+        <li class="breadcrumb-item active text-orange" aria-current="page">{{ event.title }}</li>
+      </ol>
+    </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <span class="badge bg-orange text-white mb-2 font-monospace">{{ event.category.name if event.category else 'Live Event' }}</span>
+        <h1 class="display-6 fw-bold font-serif mb-1">{{ event.title }}</h1>
+        <div class="d-flex flex-wrap align-items-center gap-2 text-white-75 small">
+          <span><i class="bi bi-calendar-event text-teal me-1"></i> {{ event.event_date.strftime('%A, %d %B %Y') if event.event_date else 'TBD' }}</span>
+          <span>•</span>
+          <span><i class="bi bi-clock text-teal me-1"></i> {{ event.start_time }} – {{ event.end_time }}</span>
+          <span>•</span>
+          <span><i class="bi bi-geo-alt-fill text-teal me-1"></i> {{ event.venue_name or event.city }}, {{ event.country }}</span>
+        </div>
+      </div>
+      <div>
+        <a href="{{ url_for('booking.select_tickets', type='event', id=event.id) }}" class="btn btn-orange btn-lg rounded-pill px-4 shadow">
+          <i class="bi bi-ticket-perforated me-1"></i> Reserve Tickets Now
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Main Left Column -->
+    <div class="col-lg-8">
+      
+      <!-- Event Hero Image -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+        {% if event.image %}
+          <img src="{{ event.image }}" alt="{{ event.title }}" class="w-100 object-cover" style="max-height: 440px;" loading="lazy">
+        {% else %}
+          <div class="p-5 text-center bg-navy text-white font-serif display-1">{{ event.title[:1] }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Overview & Description -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <h4 class="fw-bold text-navy font-serif mb-3">Event Overview</h4>
+        <p class="text-secondary leading-relaxed mb-4" style="line-height: 1.8;">
+          {{ event.description }}
+        </p>
+
+        <h5 class="fw-bold text-navy mb-3">Venue &amp; Entry Terms</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+              <i class="bi bi-building text-teal fs-4"></i>
+              <div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">VENUE CAPACITY</small>
+                <strong class="text-dark small">{{ event.venue.capacity if event.venue else '10,000+' }} Spectators</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+              <i class="bi bi-shield-x text-teal fs-4"></i>
+              <div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">SEATING TYPE</small>
+                <strong class="text-dark small">{{ 'Assigned Reserved Seating' if event.venue and event.venue.has_seating else 'General Admission / Festival' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="fw-bold text-navy mb-2">Cancellation &amp; Refund Policy</h6>
+        <div class="p-3 bg-light rounded-3 border-start border-teal border-3">
+          <p class="small text-muted mb-0">{{ event.cancellation_policy }}</p>
+        </div>
+      </div>
+
+      <!-- Assigned Seat Preview (if venue has seating) -->
+      {% if event.venue and event.venue.has_seating and available_seats %}
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-navy font-serif mb-0"><i class="bi bi-grid-3x3 text-teal me-1"></i> Arena Seating Grid Preview</h5>
+            <span class="badge bg-success-subtle text-success">{{ available_seats|length }} Seats Available</span>
+          </div>
+          <p class="small text-muted mb-3">You will be able to select your exact seats on the booking page. Preview of current stage layout:</p>
+          
+          <div class="seat-stage-indicator">STAGE / PERFORMANCE FIELD</div>
+
+          <div class="seat-map-container bg-light py-3 text-center">
+            <div class="d-flex flex-wrap justify-content-center gap-2 max-w-lg mx-auto">
+              {% for s in available_seats[:32] %}
+                <span class="seat-btn available" title="{{ s.row_label }}{{ s.seat_number }}">{{ s.row_label }}{{ s.seat_number }}</span>
+              {% endfor %}
+            </div>
+            <div class="mt-3 text-muted small">
+              <span class="badge bg-success-subtle text-success me-2">Green: Available</span>
+              <span class="badge bg-secondary-subtle text-secondary me-2">Grey: Booked</span>
+              <span class="badge bg-warning-subtle text-warning">Yellow: Temporarily Locked</span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h4 class="fw-bold text-navy font-serif mb-3">Attendee Feedback</h4>
+        {% if reviews %}
+          <div class="d-flex flex-column gap-3">
+            {% for r in reviews %}
+              <div class="p-3 bg-light rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-dark small">{{ r.user.full_name if r.user else 'Verified Fan' }}</strong>
+                  <div class="text-warning small">
+                    {% for _ in range(r.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                  </div>
+                </div>
+                <p class="text-muted small mb-0">{{ r.comment }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">No reviews published yet for this event.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right Column: Ticket Tiers & Checkout -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        <h5 class="fw-bold text-navy mb-3">Ticket Categories</h5>
+        
+        <div class="d-flex flex-column gap-2 mb-4">
+          {% for tt in ticket_types %}
+            <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center bg-light">
+              <div>
+                <strong class="d-block text-dark small fw-bold">{{ tt.name }}</strong>
+                <small class="text-muted" style="font-size: 0.72rem;">{{ tt.description or 'Official verified admission' }}</small>
+                <div class="mt-1">
+                  <span class="badge bg-teal-subtle text-teal font-monospace" style="font-size: 0.65rem;">
+                    {{ tt.quantity_available }} tickets left
+                  </span>
+                </div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-navy fs-6 font-monospace">₹{{ "%.0f"|format(tt.price) }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('booking.select_tickets', type='event', id=event.id) }}" class="btn btn-orange py-2.5 rounded-pill fw-semibold shadow-sm">
+            <i class="bi bi-ticket-perforated me-1"></i> Select Tickets &amp; Seats
+          </a>
+          <button class="btn btn-outline-teal btn-sm rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#chatModal">
+            <i class="bi bi-stars text-warning me-1"></i> Ask AI Assistant about this event
+          </button>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="small text-muted">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-lock-fill text-orange"></i>
+            <span>10-Minute Concurrency Reservation Lock</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-qr-code text-orange"></i>
+            <span>Instant Digital Turnstile Gate Passes</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-credit-card-2-front text-orange"></i>
+            <span>Razorpay Test Verified Transactions</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

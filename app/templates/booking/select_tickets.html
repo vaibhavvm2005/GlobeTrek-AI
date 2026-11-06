@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Select Tickets – {{ item.title if item_type == 'event' else item.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <span class="badge bg-teal rounded-pill px-3 py-1 text-uppercase font-monospace mb-2" style="font-size: 0.7rem;">
+          Step 1 of 3: Ticket Selection
+        </span>
+        <h2 class="fw-bold font-serif mb-1">{{ item.title if item_type == 'event' else item.name }}</h2>
+        <p class="text-white-50 small mb-0"><i class="bi bi-geo-alt text-teal me-1"></i> {{ item.city }}, {{ item.country }}</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <a href="{% if item_type == 'event' %}{{ url_for('main.event_detail', id=item.id) }}{% elif item_type == 'experience' %}{{ url_for('main.experience_detail', id=item.id) }}{% else %}{{ url_for('main.destination_detail', id=item.id) }}{% endif %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+          <i class="bi bi-arrow-left me-1"></i> Back to Details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <form action="{{ url_for('booking.reserve') }}" method="POST" id="bookingSelectionForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="item_type" value="{{ item_type }}">
+    <input type="hidden" name="item_id" value="{{ item.id }}">
+    <input type="hidden" name="idempotency_key" id="idempotencyKey">
+
+    <div class="row g-4">
+      
+      <!-- Left Column: Tickets & Seating Selection -->
+      <div class="col-lg-8">
+        
+        <!-- Schedule / Date Selection -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <h5 class="fw-bold text-navy font-serif mb-3"><i class="bi bi-calendar3 text-teal me-2"></i> Select Date &amp; Timing</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Visiting Date</label>
+              {% if item_type == 'event' %}
+                <input type="text" name="visit_date" class="form-control bg-light" value="{{ item.event_date.strftime('%Y-%m-%d') if item.event_date else '' }}" readonly required>
+              {% else %}
+                <input type="date" name="visit_date" class="form-control" id="destinationVisitDate" required>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Time Slot</label>
+              {% if item_type == 'event' %}
+                <input type="text" name="time_slot" class="form-control bg-light" value="{{ item.start_time }} – {{ item.end_time }}" readonly>
+              {% else %}
+                <select name="time_slot" class="form-select">
+                  <option value="Morning Slot (09:00 – 12:00)">Morning Slot (09:00 – 12:00)</option>
+                  <option value="Afternoon Slot (13:00 – 16:00)" selected>Afternoon Slot (13:00 – 16:00)</option>
+                  <option value="Evening Sunset Slot (16:30 – 19:30)">Evening Sunset Slot (16:30 – 19:30)</option>
+                </select>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticket Categories -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-navy font-serif mb-0"><i class="bi bi-ticket-detailed text-teal me-2"></i> Ticket Categories</h5>
+            <small class="text-muted">Max 10 tickets per booking</small>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            {% for tt in ticket_types %}
+              <div class="p-3.5 rounded-3 border bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <strong class="text-dark">{{ tt.name }}</strong>
+                    <span class="badge bg-teal-subtle text-teal font-monospace" style="font-size: 0.7rem;">
+                      {{ tt.quantity_available }} left
+                    </span>
+                  </div>
+                  <p class="text-muted small mb-0">{{ tt.description or 'Official verified admission' }}</p>
+                  <span class="fw-bold text-navy font-monospace fs-5">₹{{ "%.0f"|format(tt.price) }}</span>
+                </div>
+
+                <!-- Quantity Stepper -->
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle btn-qty-minus d-flex align-items-center justify-content-center"
+                          data-target="qtyInput_{{ tt.id }}" style="width: 32px; height: 32px;">-</button>
+                  
+                  <input type="number" 
+                         id="qtyInput_{{ tt.id }}"
+                         name="ticket_qty_{{ tt.id }}"
+                         class="form-control form-control-sm text-center font-bold ticket-qty-input fw-bold"
+                         style="width: 56px;"
+                         min="0" 
+                         max="{{ [tt.quantity_available, tt.max_per_booking]|min }}" 
+                         value="{{ 1 if loop.first else 0 }}" 
+                         data-price="{{ tt.price }}"
+                         data-name="{{ tt.name }}">
+
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle btn-qty-plus d-flex align-items-center justify-content-center"
+                          data-target="qtyInput_{{ tt.id }}" style="width: 32px; height: 32px;">+</button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Seat Selection Map (if applicable) -->
+        {% if seats %}
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold text-navy font-serif mb-0"><i class="bi bi-grid-3x3 text-teal me-2"></i> Select Your Seats</h5>
+              <small class="text-muted">Click to select or deselect</small>
+            </div>
+            
+            <div class="seat-stage-indicator">STAGE / PERFORMANCE FIELD</div>
+
+            <div class="seat-map-container bg-light py-4 text-center mb-3">
+              <div class="d-flex flex-wrap justify-content-center gap-2 max-w-lg mx-auto">
+                {% for s in seats %}
+                  <span class="seat-btn available" 
+                        data-seat-id="{{ s.id }}" 
+                        data-seat-num="{{ s.row_label }}{{ s.seat_number }}">
+                    {{ s.row_label }}{{ s.seat_number }}
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+              <span class="small fw-semibold text-dark">Selected Seats:</span>
+              <div id="selectedSeatsBadgeList">
+                <span class="text-muted small">None selected yet.</span>
+              </div>
+            </div>
+
+            <!-- Hidden container for selected seat IDs -->
+            <div id="selectedSeatsInputContainer"></div>
+          </div>
+        {% endif %}
+
+        <!-- Customer Identity Details -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+          <h5 class="fw-bold text-navy font-serif mb-3"><i class="bi bi-person-badge text-teal me-2"></i> Primary Ticket Holder</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">Full Name</label>
+              <input type="text" name="customer_name" class="form-control" value="{{ current_user.full_name }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">Email Address</label>
+              <input type="email" name="customer_email" class="form-control" value="{{ current_user.email }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">Contact Phone</label>
+              <input type="tel" name="customer_phone" class="form-control" value="{{ current_user.phone or '+91 98450 12345' }}" required>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live Price Summary & Reservation CTA -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+          <h5 class="fw-bold text-navy font-serif mb-3">Booking Breakdown</h5>
+
+          <div class="d-flex justify-content-between py-2 text-muted small">
+            <span>Ticket Subtotal:</span>
+            <strong class="text-dark" id="bookingSubtotal">₹0.00</strong>
+          </div>
+
+          <div class="d-flex justify-content-between py-2 text-muted small">
+            <span>GST Statutory Tax (18%):</span>
+            <strong class="text-dark" id="bookingTax">₹0.00</strong>
+          </div>
+
+          <div class="d-flex justify-content-between py-2 text-muted small border-bottom pb-3">
+            <span>Platform Service Fee:</span>
+            <strong class="text-dark">₹29.00</strong>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold text-navy fs-6">Estimated Total:</span>
+            <strong class="text-navy fs-4 font-monospace" id="bookingGrandTotal">₹0.00</strong>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 small text-muted mb-4 border border-secondary-subtle">
+            <i class="bi bi-info-circle-fill text-teal me-1"></i>
+            Clicking <strong>Reserve Tickets</strong> places a <strong>10-minute hold lock</strong> on your chosen inventory to prevent duplicate bookings while you complete payment.
+          </div>
+
+          <button type="submit" class="btn btn-teal w-100 py-3 rounded-pill fw-semibold shadow-sm fs-6">
+            Reserve Tickets <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script>
+// Generate UUID v4 for idempotency
+document.getElementById('idempotencyKey').value = 'idemp_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+
+// Set default destination date to tomorrow if applicable
+const dateInput = document.getElementById('destinationVisitDate');
+if (dateInput && !dateInput.value) {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  dateInput.value = tomorrow.toISOString().split('T')[0];
+  dateInput.min = new Date().toISOString().split('T')[0];
+}
+</script>
+{% endblock %}
+

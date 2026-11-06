@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      
+      <!-- Confirmation Celebration Banner -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 text-center bg-white mb-4">
+        <div class="user-avatar rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3 shadow" style="width: 72px; height: 72px; font-size: 2rem;">
+          <i class="bi bi-check-lg"></i>
+        </div>
+        <h2 class="fw-bold text-navy font-serif mb-2">Booking Confirmed!</h2>
+        <p class="text-muted lead max-w-lg mx-auto mb-3">
+          Your payment has been verified and your digital QR admission passes have been cryptographically generated.
+        </p>
+        <div class="d-inline-flex align-items-center gap-2 bg-light px-3 py-1.5 rounded-pill border mx-auto">
+          <span class="small text-muted font-monospace">BOOKING REFERENCE:</span>
+          <strong class="font-monospace text-teal fs-6">#{{ booking.booking_ref }}</strong>
+        </div>
+      </div>
+
+      <!-- Digital Tickets List -->
+      <h4 class="fw-bold text-navy font-serif mb-3">Your Digital Admission Passes ({{ tickets|length }})</h4>
+      
+      <div class="row g-4 mb-4">
+        {% for t in tickets %}
+          <div class="col-md-6">
+            <div class="ticket-pass">
+              
+              <!-- Punch notches -->
+              <div class="ticket-pass-punch-left"></div>
+              <div class="ticket-pass-punch-right"></div>
+
+              <!-- Header -->
+              <div class="ticket-pass-header d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="badge bg-teal rounded-pill font-monospace" style="font-size: 0.65rem;">VALID PASS</span>
+                  <h6 class="fw-bold mb-0 mt-1 text-white">{{ t.event_title }}</h6>
+                </div>
+                <i class="bi bi-shield-check text-teal fs-4"></i>
+              </div>
+
+              <!-- Body -->
+              <div class="p-4 bg-white">
+                <div class="row align-items-center g-3">
+                  <div class="col-7">
+                    <div class="mb-2">
+                      <small class="text-muted d-block" style="font-size: 0.7rem;">HOLDER</small>
+                      <strong class="text-dark small">{{ t.holder_name }}</strong>
+                    </div>
+                    <div class="mb-2">
+                      <small class="text-muted d-block" style="font-size: 0.7rem;">SCHEDULE</small>
+                      <span class="text-dark small">{{ t.visit_date }}</span>
+                      {% if t.time_slot %}<span class="text-muted small d-block">{{ t.time_slot }}</span>{% endif %}
+                    </div>
+                    <div class="mb-2">
+                      <small class="text-muted d-block" style="font-size: 0.7rem;">CATEGORY</small>
+                      <span class="badge bg-light text-dark border">{{ t.ticket_type_name }}</span>
+                      {% if t.seat_info %}
+                        <span class="badge bg-teal">Seat: {{ t.seat_info }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- QR Code Matrix -->
+                  <div class="col-5 text-center">
+                    <div class="qr-code-box mx-auto">
+                      <!-- Render QR or SVG image -->
+                      <img src="{% if t.qr_image_path %}{{ url_for('static', filename=t.qr_image_path) }}{% else %}/static/uploads/qr/qr_{{ t.ticket_uid }}.png{% endif %}" alt="QR Pass" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ t.qr_token }}'">
+                    </div>
+                    <small class="text-muted font-monospace d-block mt-1" style="font-size: 0.65rem;">
+                      {{ t.ticket_uid[:8] }}...
+                    </small>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+                  <a href="{{ url_for('customer.download_ticket', uid=t.ticket_uid) }}" class="btn btn-sm btn-outline-teal rounded-pill px-3">
+                    <i class="bi bi-download me-1"></i> Download PDF
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{{ url_for('customer.bookings') }}" class="btn btn-teal rounded-pill px-4 py-2">
+          <i class="bi bi-receipt me-1"></i> View All My Bookings
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+          <i class="bi bi-house me-1"></i> Return to Homepage
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

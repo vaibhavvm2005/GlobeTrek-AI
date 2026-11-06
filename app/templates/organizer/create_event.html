@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Create Event – Organizer Portal{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <h2 class="fw-bold font-serif mb-1">Create New Event</h2>
+    <p class="text-white-50 small mb-0">Publish a new sports tournament, concert, exhibition, or festival</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+        <form method="POST" action="{{ url_for('organizer.create_event') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Basic Info -->
+          <h5 class="fw-bold text-navy font-serif mb-3">1. Basic Information</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-dark">Event Title</label>
+              <input type="text" name="title" class="form-control" placeholder="e.g. Ed Sheeran Stadium Tour" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Category</label>
+              <select name="category_id" class="form-select" required>
+                {% for c in categories %}
+                  <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Promotional Image URL</label>
+              <input type="url" name="image" class="form-control" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-dark">Event Description</label>
+              <textarea name="description" class="form-control" rows="4" placeholder="Detail the event schedule, headliners, and entry terms..." required></textarea>
+            </div>
+          </div>
+
+          <!-- Venue & Schedule -->
+          <h5 class="fw-bold text-navy font-serif mb-3">2. Schedule &amp; Venue</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">Date</label>
+              <input type="date" name="event_date" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">Start Time</label>
+              <input type="time" name="start_time" class="form-control" value="18:00" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-dark">End Time</label>
+              <input type="time" name="end_time" class="form-control" value="22:00" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Venue Name / Arena</label>
+              <input type="text" name="venue_name" class="form-control" placeholder="e.g. Madison Square Garden" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Venue Physical Address</label>
+              <input type="text" name="venue_address" class="form-control" placeholder="Street, area..." required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">City</label>
+              <input type="text" name="city" class="form-control" placeholder="e.g. New York" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-dark">Country</label>
+              <input type="text" name="country" class="form-control" placeholder="e.g. United States" required>
+            </div>
+          </div>
+
+          <!-- Ticket Categories -->
+          <h5 class="fw-bold text-navy font-serif mb-3">3. Ticket Tiers &amp; Pricing</h5>
+          <div id="ticketTiersContainer" class="d-flex flex-column gap-3 mb-3">
+            <div class="p-3 bg-light rounded-3 border ticket-tier-row">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-dark">Tier Name</label>
+                  <input type="text" name="tt_name" class="form-control form-control-sm" value="General Admission" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold text-dark">Price (₹)</label>
+                  <input type="number" name="tt_price" class="form-control form-control-sm" value="1500" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold text-dark">Quantity Quota</label>
+                  <input type="number" name="tt_quantity" class="form-control form-control-sm" value="250" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                  <span class="badge bg-secondary-subtle text-secondary small p-2 w-100 text-center">Primary</span>
+                </div>
+                <div class="col-12 mt-2">
+                  <input type="text" name="tt_description" class="form-control form-control-sm" placeholder="Perks / inclusions...">
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 border ticket-tier-row">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-dark">Tier Name</label>
+                  <input type="text" name="tt_name" class="form-control form-control-sm" value="VIP Lounge Access">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold text-dark">Price (₹)</label>
+                  <input type="number" name="tt_price" class="form-control form-control-sm" value="4500">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold text-dark">Quantity Quota</label>
+                  <input type="number" name="tt_quantity" class="form-control form-control-sm" value="50">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                  <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.ticket-tier-row').remove()">Remove</button>
+                </div>
+                <div class="col-12 mt-2">
+                  <input type="text" name="tt_description" class="form-control form-control-sm" placeholder="VIP bar access, priority turnstile entry" value="VIP bar access, priority turnstile entry">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-outline-teal btn-sm rounded-pill mb-4" onclick="addTicketTier()">
+            <i class="bi bi-plus me-1"></i> Add Another Ticket Tier
+          </button>
+
+          <!-- Policy -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark">Cancellation Policy</label>
+            <textarea name="cancellation_policy" class="form-control" rows="2">Full refund up to 72 hours before the scheduled start time.</textarea>
+          </div>
+
+          <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+            <a href="{{ url_for('organizer.events') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+            <button type="submit" class="btn btn-teal rounded-pill px-5 fw-semibold shadow-sm">
+              Submit Event for Approval
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function addTicketTier() {
+  const container = document.getElementById('ticketTiersContainer');
+  const div = document.createElement('div');
+  div.className = 'p-3 bg-light rounded-3 border ticket-tier-row';
+  div.innerHTML = `
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold text-dark">Tier Name</label>
+        <input type="text" name="tt_name" class="form-control form-control-sm" placeholder="e.g. Student Pass" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-dark">Price (₹)</label>
+        <input type="number" name="tt_price" class="form-control form-control-sm" placeholder="800" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-dark">Quantity Quota</label>
+        <input type="number" name="tt_quantity" class="form-control form-control-sm" placeholder="100" required>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.ticket-tier-row').remove()">Remove</button>
+      </div>
+      <div class="col-12 mt-2">
+        <input type="text" name="tt_description" class="form-control form-control-sm" placeholder="Tier description / inclusions...">
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My Events – Organizer Portal{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <h2 class="fw-bold font-serif mb-1">My Managed Events</h2>
+        <p class="text-white-50 small mb-0">Events and stadium performances organized under your account</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('organizer.create_event') }}" class="btn btn-teal btn-sm rounded-pill px-3">
+          <i class="bi bi-plus-circle me-1"></i> Create New Event
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    {% if events.items %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light small text-muted">
+            <tr>
+              <th>Event Title</th>
+              <th>Venue &amp; Location</th>
+              <th>Date &amp; Schedule</th>
+              <th>Approval</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in events.items %}
+              <tr>
+                <td>
+                  <strong class="text-dark small d-block">{{ e.title }}</strong>
+                  <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">{{ e.category.name if e.category else 'Live Event' }}</span>
+                </td>
+                <td class="small">{{ e.venue_name or e.city }}, {{ e.country }}</td>
+                <td class="small text-muted">{{ e.event_date }} ({{ e.start_time }})</td>
+                <td>
+                  <span class="badge rounded-pill {% if e.is_approved %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                    {{ 'Approved' if e.is_approved else 'Pending Review' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge rounded-pill {% if e.is_published %}bg-teal-subtle text-teal{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                    {{ 'Published' if e.is_published else 'Draft' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-1.5">
+                    <a href="{{ url_for('main.event_detail', id=e.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5">
+                      Preview
+                    </a>
+                    <a href="{{ url_for('organizer.edit_event', id=e.id) }}" class="btn btn-sm btn-outline-teal rounded-pill px-2.5">
+                      Edit
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <p class="small mb-3">You have not created any events yet.</p>
+        <a href="{{ url_for('organizer.create_event') }}" class="btn btn-teal rounded-pill px-4">
+          Create Your First Event
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

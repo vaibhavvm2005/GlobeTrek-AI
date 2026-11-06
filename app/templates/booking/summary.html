@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Review Reservation – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <span class="badge bg-teal rounded-pill px-3 py-1 text-uppercase font-monospace mb-2" style="font-size: 0.7rem;">
+          Step 2 of 3: Review Reservation
+        </span>
+        <h2 class="fw-bold font-serif mb-1">Reservation Hold Confirmed</h2>
+        <p class="text-white-50 small mb-0 font-monospace">Booking Ref: #{{ booking.booking_ref }}</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <span id="holdCountdownTimer" 
+              class="badge bg-warning text-dark px-3.5 py-2 fs-6 rounded-pill shadow-sm"
+              data-expires-at="{{ booking.hold_expires_at.isoformat() if booking.hold_expires_at else '' }}">
+          <i class="bi bi-clock-history me-1"></i> Calculating hold time...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+        
+        <div class="alert alert-info border-0 rounded-3 d-flex align-items-center gap-2 mb-4">
+          <i class="bi bi-shield-lock-fill fs-5 text-teal"></i>
+          <small>Your selected tickets are temporarily held for <strong>10 minutes</strong>. Other customers cannot book these seats while you complete checkout.</small>
+        </div>
+
+        <h4 class="fw-bold text-navy font-serif mb-3">{{ booking.item_name }}</h4>
+        <div class="d-flex flex-wrap gap-3 text-muted small mb-4 pb-3 border-bottom">
+          <span><i class="bi bi-calendar-check text-teal me-1"></i> Date: <strong>{{ booking.visit_date }}</strong></span>
+          {% if booking.time_slot %}
+            <span><i class="bi bi-clock text-teal me-1"></i> Slot: <strong>{{ booking.time_slot }}</strong></span>
+          {% endif %}
+          <span><i class="bi bi-person text-teal me-1"></i> Primary Holder: <strong>{{ booking.customer_name }}</strong></span>
+        </div>
+
+        <!-- Reserved Items Table -->
+        <h5 class="fw-bold text-navy mb-3">Reserved Tickets</h5>
+        <div class="table-responsive mb-4">
+          <table class="table align-middle">
+            <thead class="table-light small text-muted">
+              <tr>
+                <th>Ticket Category</th>
+                <th>Seat / Access</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in booking.items %}
+                <tr>
+                  <td>
+                    <strong class="text-dark small">{{ item.ticket_type.name if item.ticket_type else 'Admission' }}</strong>
+                  </td>
+                  <td>
+                    {% if item.seat %}
+                      <span class="badge bg-teal rounded-pill">{{ item.seat.row_label }}{{ item.seat.seat_number }}</span>
+                    {% else %}
+                      <span class="text-muted small">General Admission</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center font-monospace">{{ item.quantity }}</td>
+                  <td class="text-end font-monospace small">₹{{ "%.2f"|format(item.unit_price) }}</td>
+                  <td class="text-end font-monospace fw-bold">₹{{ "%.2f"|format(item.subtotal) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="p-3 bg-light rounded-3 mb-4">
+          <div class="d-flex justify-content-between py-1.5 small text-muted">
+            <span>Ticket Subtotal:</span>
+            <span class="font-monospace text-dark">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1.5 small text-muted">
+            <span>GST Statutory Tax (18%):</span>
+            <span class="font-monospace text-dark">₹{{ "%.2f"|format(booking.tax_amount) }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1.5 small text-muted">
+            <span>Service &amp; Technology Fee:</span>
+            <span class="font-monospace text-dark">₹{{ "%.2f"|format(booking.service_fee) }}</span>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center pt-1">
+            <span class="fw-bold text-navy fs-6">Grand Total Payable:</span>
+            <strong class="text-navy fs-3 font-monospace">₹{{ "%.2f"|format(booking.grand_total) }}</strong>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex flex-column flex-md-row gap-3">
+          <a href="{{ url_for('booking.payment_page', id=booking.id) }}" class="btn btn-teal btn-lg rounded-pill px-4 flex-grow-1 fw-semibold shadow-sm">
+            Proceed to Payment <i class="bi bi-credit-card ms-1"></i>
+          </a>
+          <form action="{{ url_for('booking.cancel', id=booking.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to release this reservation?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger btn-lg rounded-pill px-4 w-100">
+              Cancel &amp; Release Hold
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}
+

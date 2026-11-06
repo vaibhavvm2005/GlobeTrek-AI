@@ -1,0 +1,408 @@
+/* ==========================================================================
+   GlobeTrek AI – Master Theme Stylesheet
+   Color Palette:
+     --navy: #0f172a (Primary Deep Navy)
+     --navy-light: #1e293b
+     --teal: #0d9488 (Secondary Teal)
+     --teal-dark: #0f766e
+     --orange: #ea580c (Accent Orange)
+     --orange-dark: #c2410c
+     --light-bg: #f8f9fa
+   ========================================================================== */
+
+:root {
+  --navy: #0f172a;
+  --navy-light: #1e293b;
+  --teal: #0d9488;
+  --teal-dark: #0f766e;
+  --orange: #ea580c;
+  --orange-dark: #c2410c;
+  --light-bg: #f8fafc;
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+  --card-hover-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.16);
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #334155;
+  background-color: var(--light-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* --------------------------------------------------------------------------
+   Branding & Colors
+   -------------------------------------------------------------------------- */
+.bg-navy {
+  background-color: var(--navy) !important;
+}
+
+.bg-teal {
+  background-color: var(--teal) !important;
+}
+
+.bg-orange {
+  background-color: var(--orange) !important;
+}
+
+.text-teal {
+  color: var(--teal) !important;
+}
+
+.text-orange {
+  color: var(--orange) !important;
+}
+
+.btn-teal {
+  background-color: var(--teal);
+  color: #ffffff;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-teal:hover {
+  background-color: var(--teal-dark);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-outline-teal {
+  color: var(--teal);
+  border-color: var(--teal);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-teal:hover {
+  background-color: var(--teal);
+  color: #ffffff;
+}
+
+.btn-orange {
+  background-color: var(--orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-orange:hover {
+  background-color: var(--orange-dark);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-outline-orange {
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.btn-outline-orange:hover {
+  background-color: var(--orange);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Navbar & Navigation
+   -------------------------------------------------------------------------- */
+.brand-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-size: 1.35rem;
+  color: #ffffff;
+}
+
+.user-avatar-sm {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.hover-white:hover {
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Section
+   -------------------------------------------------------------------------- */
+.hero-wrapper {
+  position: relative;
+  min-height: 520px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(13, 148, 136, 0.85) 100%),
+              url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+}
+
+.hero-search-box {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Cards & Grids
+   -------------------------------------------------------------------------- */
+.card-hover {
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: var(--card-shadow);
+  transition: all 0.25s ease-in-out;
+  overflow: hidden;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: rgba(13, 148, 136, 0.3);
+}
+
+.card-img-placeholder {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e293b, #0d9488);
+}
+
+.card-img-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.card-hover:hover .card-img-placeholder img {
+  transform: scale(1.05);
+}
+
+.category-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover .category-icon-box {
+  transform: scale(1.1);
+}
+
+/* --------------------------------------------------------------------------
+   Seat Map Grid (Assigned Seating)
+   -------------------------------------------------------------------------- */
+.seat-map-container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.seat-stage-indicator {
+  background: linear-gradient(to right, #0f172a, #0d9488, #0f172a);
+  color: #ffffff;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 6px;
+  margin-bottom: 2rem;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.seat-row-label {
+  width: 24px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.seat-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.seat-btn.available {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.seat-btn.available:hover {
+  background-color: #10b981;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.seat-btn.selected {
+  background-color: var(--teal) !important;
+  color: #ffffff !important;
+  border-color: var(--teal-dark) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3);
+}
+
+.seat-btn.locked {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.seat-btn.booked {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* --------------------------------------------------------------------------
+   Digital Tickets & QR
+   -------------------------------------------------------------------------- */
+.ticket-pass {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.ticket-pass-header {
+  background: var(--navy);
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+}
+
+.ticket-pass-punch-left,
+.ticket-pass-punch-right {
+  width: 24px;
+  height: 24px;
+  background-color: var(--light-bg);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.ticket-pass-punch-left {
+  left: -12px;
+}
+
+.ticket-pass-punch-right {
+  right: -12px;
+}
+
+.qr-code-box {
+  width: 140px;
+  height: 140px;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-code-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* --------------------------------------------------------------------------
+   Chatbot Bubbles
+   -------------------------------------------------------------------------- */
+.chat-bubble-user {
+  background-color: var(--teal);
+  color: #ffffff;
+  border-radius: 18px 18px 4px 18px;
+  padding: 0.75rem 1.2rem;
+  max-width: 80%;
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+}
+
+.chat-bubble-ai {
+  background-color: #ffffff;
+  color: #1e293b;
+  border-radius: 18px 18px 18px 4px;
+  padding: 0.85rem 1.2rem;
+  max-width: 85%;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.prompt-chip {
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.prompt-chip:hover {
+  background-color: var(--teal);
+  color: #ffffff;
+  border-color: var(--teal);
+}
+
+/* --------------------------------------------------------------------------
+   Animations & Polish
+   -------------------------------------------------------------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .navbar, footer, .btn, .no-print {
+    display: none !important;
+  }
+  .ticket-pass {
+    box-shadow: none !important;
+    border: 1px dashed #000000 !important;
+    page-break-inside: avoid;
+  }
+}
+

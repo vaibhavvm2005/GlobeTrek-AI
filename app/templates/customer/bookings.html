@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}My Bookings – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <h2 class="fw-bold font-serif mb-1">My Booking History</h2>
+        <p class="text-white-50 small mb-0">Track upcoming dates, review past reservations, and manage cancellations</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('customer.tickets') }}" class="btn btn-teal btn-sm rounded-pill px-3">
+          <i class="bi bi-qr-code me-1"></i> Open Ticket Wallet
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  
+  <!-- Tabs Navigation -->
+  <div class="card border-0 shadow-sm rounded-4 p-2 bg-white mb-4">
+    <ul class="nav nav-pills gap-2">
+      <li class="nav-item">
+        <a class="nav-link rounded-pill px-4 py-2 {% if filter == 'all' %}active bg-teal text-white{% else %}text-muted{% endif %}" 
+           href="{{ url_for('customer.bookings', filter='all') }}">All Bookings</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link rounded-pill px-4 py-2 {% if filter == 'upcoming' %}active bg-teal text-white{% else %}text-muted{% endif %}" 
+           href="{{ url_for('customer.bookings', filter='upcoming') }}">Upcoming</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link rounded-pill px-4 py-2 {% if filter == 'completed' %}active bg-teal text-white{% else %}text-muted{% endif %}" 
+           href="{{ url_for('customer.bookings', filter='completed') }}">Completed</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link rounded-pill px-4 py-2 {% if filter == 'cancelled' %}active bg-teal text-white{% else %}text-muted{% endif %}" 
+           href="{{ url_for('customer.bookings', filter='cancelled') }}">Cancelled</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Bookings List -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    {% if bookings.items %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light small text-muted">
+            <tr>
+              <th>Booking Ref</th>
+              <th>Destination / Event</th>
+              <th>Visit Date &amp; Slot</th>
+              <th>Tickets</th>
+              <th>Total Paid</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings.items %}
+              <tr>
+                <td><span class="font-monospace fw-semibold text-dark">#{{ b.booking_ref[:8] }}...</span></td>
+                <td>
+                  <strong class="text-dark small d-block">{{ b.item_name }}</strong>
+                  <small class="text-muted" style="font-size: 0.72rem;">Booked on {{ b.created_at.strftime('%d %b %Y') if b.created_at else '' }}</small>
+                </td>
+                <td class="small">
+                  <span class="d-block text-dark">{{ b.visit_date }}</span>
+                  <span class="text-muted" style="font-size: 0.72rem;">{{ b.time_slot or 'Standard Entry' }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ b.items|length }} ticket(s)</span>
+                </td>
+                <td class="font-monospace fw-bold text-dark">₹{{ "%.2f"|format(b.grand_total) }}</td>
+                <td>
+                  <span class="badge rounded-pill {% if b.status == 'CONFIRMED' %}bg-success-subtle text-success{% elif b.status == 'PENDING' %}bg-warning-subtle text-warning{% elif b.status == 'CANCELLED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                    {{ b.status }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-1.5">
+                    {% if b.status == 'CONFIRMED' %}
+                      <a href="{{ url_for('booking.success', id=b.id) }}" class="btn btn-sm btn-outline-teal rounded-pill px-2.5">
+                        <i class="bi bi-qr-code me-1"></i> Pass
+                      </a>
+                      <form action="{{ url_for('booking.cancel', id=b.id) }}" method="POST" onsubmit="return confirm('Confirm cancellation and refund request?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2.5">
+                          Cancel
+                        </button>
+                      </form>
+                    {% elif b.status == 'PENDING' %}
+                      <a href="{{ url_for('booking.payment_page', id=b.id) }}" class="btn btn-sm btn-teal rounded-pill px-2.5">
+                        Pay
+                      </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if bookings.pages > 1 %}
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if bookings.has_prev %}
+              <li class="page-item"><a class="page-link text-teal" href="{{ url_for('customer.bookings', page=bookings.prev_num, filter=filter) }}">Previous</a></li>
+            {% endif %}
+            {% for p in range(1, bookings.pages + 1) %}
+              <li class="page-item {% if p == bookings.page %}active{% endif %}">
+                <a class="page-link {% if p == bookings.page %}bg-teal border-teal text-white{% else %}text-teal{% endif %}" href="{{ url_for('customer.bookings', page=p, filter=filter) }}">{{ p }}</a>
+              </li>
+            {% endfor %}
+            {% if bookings.has_next %}
+              <li class="page-item"><a class="page-link text-teal" href="{{ url_for('customer.bookings', page=bookings.next_num, filter=filter) }}">Next</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-receipt-cutoff fs-1 d-block mb-2 text-teal opacity-50"></i>
+        <h5 class="fw-bold text-navy">No bookings found</h5>
+        <p class="small text-muted mb-3">No bookings currently match the "{{ filter }}" filter.</p>
+        <a href="{{ url_for('main.destinations') }}" class="btn btn-teal btn-sm rounded-pill px-4">
+          Explore Experiences
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+

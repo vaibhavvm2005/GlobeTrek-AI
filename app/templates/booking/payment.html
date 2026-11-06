@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Checkout &amp; Payment – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <span class="badge bg-teal rounded-pill px-3 py-1 text-uppercase font-monospace mb-2" style="font-size: 0.7rem;">
+          Step 3 of 3: Payment Verification
+        </span>
+        <h2 class="fw-bold font-serif mb-1">Complete Online Payment</h2>
+        <p class="text-white-50 small mb-0 font-monospace">Ref: #{{ booking.booking_ref }}</p>
+      </div>
+      <div class="mt-3 mt-md-0">
+        <span id="holdCountdownTimer" 
+              class="badge bg-warning text-dark px-3.5 py-2 fs-6 rounded-pill shadow-sm"
+              data-expires-at="{{ booking.hold_expires_at.isoformat() if booking.hold_expires_at else '' }}">
+          <i class="bi bi-clock-history me-1"></i> Calculating hold time...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+        
+        <!-- Summary Box -->
+        <div class="d-flex justify-content-between align-items-center p-3.5 bg-light rounded-3 mb-4">
+          <div>
+            <span class="text-muted small d-block">TOTAL AMOUNT DUE</span>
+            <strong class="text-navy fs-3 font-monospace">₹{{ "%.2f"|format(booking.grand_total) }}</strong>
+          </div>
+          <span class="badge bg-teal-subtle text-teal px-3 py-2 rounded-pill font-monospace">
+            {{ booking.items|length }} ticket item(s)
+          </span>
+        </div>
+
+        {% if payment_info.is_simulated %}
+          <!-- DEMO / SIMULATED PAYMENT MODE -->
+          <div class="p-4 rounded-4 bg-light border border-teal-subtle mb-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-warning text-dark font-monospace text-xs">TEST MODE</span>
+              <h5 class="fw-bold text-navy mb-0">Simulated Payment Gateway</h5>
+            </div>
+            <p class="small text-muted mb-3">
+              No live Razorpay credentials are configured in the environment. GlobeTrek AI is running in <strong>verified demo transaction mode</strong>. Clicking below creates an authentic cryptographic payment record, confirms the booking, and generates your HMAC-SHA256 turnstile tickets.
+            </p>
+
+            <form action="{{ url_for('booking.pay', id=booking.id) }}" method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="simulated" value="true">
+
+              <div class="mb-3">
+                <label class="form-label small fw-semibold text-dark">Simulated Card / UPI Handler</label>
+                <input type="text" class="form-control form-control-sm bg-white" value="HDFC Bank UPI •••• 9845" readonly disabled>
+              </div>
+
+              <button type="submit" class="btn btn-teal w-100 py-3 rounded-pill fw-semibold shadow-sm fs-6">
+                <i class="bi bi-shield-check me-1"></i> Authorize &amp; Confirm Payment (₹{{ "%.2f"|format(booking.grand_total) }})
+              </button>
+            </form>
+          </div>
+
+        {% else %}
+          <!-- LIVE RAZORPAY PAYMENT -->
+          <div class="text-center py-4">
+            <div class="display-6 text-teal mb-3"><i class="bi bi-credit-card-2-front"></i></div>
+            <h5 class="fw-bold text-navy mb-2">Secure Razorpay Checkout</h5>
+            <p class="text-muted small mb-4">Click below to open the secure Razorpay payment modal with Cards, UPI, Netbanking, and Wallets.</p>
+
+            <button type="button" id="rzpButton" class="btn btn-teal btn-lg rounded-pill px-5 shadow-sm">
+              <i class="bi bi-lock-fill me-1"></i> Pay Now with Razorpay (₹{{ "%.2f"|format(booking.grand_total) }})
+            </button>
+
+            <!-- Hidden Form for submission after Razorpay verification -->
+            <form id="rzpForm" action="{{ url_for('booking.pay', id=booking.id) }}" method="POST" class="d-none">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="simulated" value="false">
+              <input type="hidden" name="razorpay_payment_id" id="rzpPaymentId">
+              <input type="hidden" name="razorpay_order_id" id="rzpOrderId">
+              <input type="hidden" name="razorpay_signature" id="rzpSignature">
+            </form>
+          </div>
+        {% endif %}
+
+        <div class="text-center mt-3 pt-3 border-top">
+          <small class="text-muted d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-shield-fill-check text-success"></i>
+            256-bit TLS Encrypted Transaction · Zero Duplicate Booking Guarantee
+          </small>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% if not payment_info.is_simulated %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const options = {
+  key: "{{ payment_info.key_id }}",
+  amount: "{{ payment_info.amount_paise }}",
+  currency: "{{ payment_info.currency }}",
+  name: "GlobeTrek AI",
+  description: "Official Booking Pass #{{ booking.booking_ref }}",
+  order_id: "{{ payment_info.order_id }}",
+  prefill: {
+    name: "{{ booking.customer_name }}",
+    email: "{{ booking.customer_email }}",
+    contact: "{{ booking.customer_phone }}"
+  },
+  theme: { color: "#0d9488" },
+  handler: function (response) {
+    document.getElementById("rzpPaymentId").value = response.razorpay_payment_id;
+    document.getElementById("rzpOrderId").value = response.razorpay_order_id;
+    document.getElementById("rzpSignature").value = response.razorpay_signature;
+    document.getElementById("rzpForm").submit();
+  }
+};
+
+const rzp = new Razorpay(options);
+document.getElementById("rzpButton").onclick = function(e){
+  rzp.open();
+  e.preventDefault();
+}
+</script>
+{% endif %}
+{% endblock %}
+

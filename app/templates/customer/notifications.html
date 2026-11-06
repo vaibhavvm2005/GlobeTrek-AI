@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}My Notifications – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <h2 class="fw-bold font-serif mb-1">Notifications &amp; Activity</h2>
+    <p class="text-white-50 small mb-0">Live updates regarding payment status, seat holds, and booking confirmations</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        {% if notifications.items %}
+          <div class="d-flex flex-column gap-3">
+            {% for n in notifications.items %}
+              <div class="p-3 rounded-3 border d-flex gap-3 align-items-start {% if not n.is_read %}bg-light border-teal-subtle{% else %}bg-white{% endif %}">
+                <div class="user-avatar rounded-circle bg-teal text-white d-flex align-items-center justify-content-center shrink-0 mt-1" style="width: 36px; height: 36px; min-width: 36px;">
+                  <i class="bi bi-bell-fill" style="font-size: 0.9rem;"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-dark small">{{ n.title }}</strong>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ n.created_at.strftime('%d %b, %H:%M') if n.created_at else '' }}</small>
+                  </div>
+                  <p class="text-muted small mb-0">{{ n.message }}</p>
+                </div>
+                {% if not n.is_read %}
+                  <form action="{{ url_for('customer.mark_notification_read', id=n.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill py-0.5 px-2" style="font-size: 0.7rem;">
+                      Mark read
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-bell-slash fs-2 d-block mb-2 text-teal opacity-50"></i>
+            <h5 class="fw-bold text-navy">No notifications</h5>
+            <p class="small text-muted mb-0">You're all caught up! Booking alerts will appear here.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}GlobeTrek AI – Discover the World. Experience More. Book Smarter.{% endblock %}
+
+{% block content %}
+<!-- ========================================================================= -->
+<!-- HERO SECTION                                                              -->
+<!-- ========================================================================= -->
+<section class="hero-wrapper text-white py-5">
+  <div class="container py-lg-5">
+    <div class="row align-items-center">
+      <div class="col-lg-8 mx-auto text-center">
+        <span class="badge bg-teal rounded-pill px-3 py-1.5 mb-3 text-uppercase font-monospace" style="font-size: 0.75rem; letter-spacing: 1px;">
+          <i class="bi bi-stars text-warning me-1"></i> AI-Powered Global Discovery &amp; Ticketing
+        </span>
+        <h1 class="display-4 fw-bold mb-3 font-serif">
+          Discover the World.<br>Experience More. <span class="text-orange">Book Smarter.</span>
+        </h1>
+        <p class="lead text-white-75 mb-4">
+          Explore iconic landmarks, reserve stadium concerts and championship games, and generate instant verified digital QR tickets with zero oversell.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="hero-search-box text-start mt-4">
+          <form action="{{ url_for('main.search') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <label class="form-label small text-muted mb-1"><i class="bi bi-geo-alt text-teal me-1"></i> Destination or Event</label>
+              <input type="text" name="q" class="form-control border-0 bg-light rounded-3 py-2" placeholder="e.g. Paris, Coldplay, Taj Mahal...">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-1"><i class="bi bi-tags text-teal me-1"></i> Category</label>
+              <select name="category" class="form-select border-0 bg-light rounded-3 py-2">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 mt-3 mt-md-0 d-flex align-items-end">
+              <button type="submit" class="btn btn-teal w-100 py-2.5 rounded-3 fw-semibold shadow-sm">
+                <i class="bi bi-search me-1"></i> Explore
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- CATEGORIES PILLARS                                                        -->
+<!-- ========================================================================= -->
+<section class="py-5 bg-white border-bottom">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="text-orange fw-bold text-uppercase small font-monospace">Global Curation</span>
+        <h3 class="fw-bold text-navy font-serif mb-1">Explore by Category</h3>
+        <p class="text-muted small mb-0">Browse over 80+ curated international experiences across 8 core categories</p>
+      </div>
+      <a href="{{ url_for('main.experiences') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3 fw-semibold">
+        View All Experiences (80+) <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-3 g-md-4">
+      {% for cat in categories %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <a href="{{ url_for('main.category_detail', slug=cat.slug) }}" class="text-decoration-none text-dark d-block h-100">
+            <div class="card card-hover p-3.5 text-center h-100 bg-light border-0 rounded-4 shadow-2xs transition-all position-relative">
+              <div class="category-icon-box bg-white text-teal shadow-xs mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 56px; height: 56px; font-size: 1.45rem;">
+                <i class="bi {{ cat.icon or 'bi-compass' }}"></i>
+              </div>
+              <h6 class="fw-bold text-navy mb-1.5 font-serif">{{ cat.name }}</h6>
+              <p class="text-muted text-xs mb-2.5 flex-grow-1 line-clamp-2" style="font-size: 0.78rem; line-height: 1.35;">{{ cat.description }}</p>
+              <div class="mt-auto pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
+                <span class="badge bg-teal-subtle text-teal rounded-pill px-2 py-1 font-monospace" style="font-size: 0.68rem;">10+ Listings</span>
+                <span class="text-teal small fw-semibold" style="font-size: 0.75rem;">Explore <i class="bi bi-chevron-right"></i></span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- FEATURED DESTINATIONS                                                     -->
+<!-- ========================================================================= -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="text-orange fw-bold text-uppercase small font-monospace">Landmarks &amp; Attractions</span>
+        <h2 class="fw-bold text-navy font-serif mb-1">Popular Tourist Destinations</h2>
+      </div>
+      <a href="{{ url_for('main.destinations') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+        All Destinations <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for dest in destinations %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-hover h-100 bg-white">
+            <div class="card-img-placeholder">
+              {% set img_list = dest.to_dict().images %}
+              {% if img_list and img_list|length > 0 %}
+                <img src="{{ img_list[0] }}" alt="{{ dest.name }}" loading="lazy">
+              {% else %}
+                <div class="text-white display-4 fw-bold opacity-75 font-serif">{{ dest.name[:1] }}</div>
+              {% endif %}
+              <span class="position-absolute top-0 end-0 m-3 badge bg-white text-dark shadow-sm">
+                <i class="bi bi-star-fill text-warning me-1"></i> {{ dest.rating }} ({{ dest.review_count }})
+              </span>
+            </div>
+            <div class="card-body p-4 d-flex flex-column">
+              <div class="d-flex align-items-center gap-1.5 text-muted small mb-2">
+                <i class="bi bi-geo-alt-fill text-teal"></i>
+                <span>{{ dest.city }}, {{ dest.country }}</span>
+              </div>
+              <h5 class="fw-bold text-navy font-serif mb-2">{{ dest.name }}</h5>
+              <p class="text-muted small mb-4 flex-grow-1">{{ dest.description[:110] }}...</p>
+              
+              <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                <div>
+                  <small class="text-muted d-block" style="font-size: 0.72rem;">Tickets from</small>
+                  <strong class="text-dark font-monospace fs-5">₹{{ "%.0f"|format(dest.ticket_price) }}</strong>
+                </div>
+                <a href="{{ url_for('main.destination_detail', id=dest.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">
+                  Explore <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- UPCOMING EVENTS SECTION                                                   -->
+<!-- ========================================================================= -->
+<section class="py-5 bg-white border-top border-bottom">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="text-teal fw-bold text-uppercase small font-monospace">Concerts, Sports &amp; Summits</span>
+        <h2 class="fw-bold text-navy font-serif mb-1">Upcoming Global Events</h2>
+      </div>
+      <a href="{{ url_for('main.events') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+        All Events <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for event in events %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-hover h-100 bg-white">
+            <div class="card-img-placeholder">
+              {% if event.image %}
+                <img src="{{ event.image }}" alt="{{ event.title }}" loading="lazy">
+              {% else %}
+                <div class="text-white display-4 fw-bold opacity-75 font-serif">{{ event.title[:1] }}</div>
+              {% endif %}
+              <span class="position-absolute top-0 start-0 m-3 badge bg-orange text-white shadow-sm font-monospace">
+                <i class="bi bi-calendar3 me-1"></i> {{ event.event_date.strftime('%d %b %Y') if event.event_date else 'TBD' }}
+              </span>
+            </div>
+            <div class="card-body p-4 d-flex flex-column">
+              <span class="badge bg-teal-subtle text-teal w-auto me-auto mb-2" style="font-size: 0.72rem;">
+                {{ event.category.name if event.category else 'Live Event' }}
+              </span>
+              <h5 class="fw-bold text-navy font-serif mb-2">{{ event.title }}</h5>
+              <div class="text-muted small mb-2 d-flex align-items-center gap-1.5">
+                <i class="bi bi-geo-alt-fill text-muted"></i>
+                <span>{{ event.venue_name or event.city }}, {{ event.country }}</span>
+              </div>
+              <p class="text-muted small mb-4 flex-grow-1">{{ event.description[:100] }}...</p>
+              
+              <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                <div>
+                  <small class="text-muted d-block" style="font-size: 0.72rem;">Starts from</small>
+                  {% set t_first = event.ticket_types.first() %}
+                  <strong class="text-dark font-monospace fs-5">₹{{ "%.0f"|format(t_first.price) if t_first else '999' }}</strong>
+                </div>
+                <a href="{{ url_for('main.event_detail', id=event.id) }}" class="btn btn-orange btn-sm rounded-pill px-3">
+                  Book Tickets <i class="bi bi-ticket-perforated ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- AI TRAVEL ASSISTANT PROMO BANNER                                          -->
+<!-- ========================================================================= -->
+<section class="py-5">
+  <div class="container">
+    <div class="card border-0 rounded-4 overflow-hidden bg-navy text-white shadow-lg p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <span class="badge bg-teal rounded-pill px-3 py-1.5 mb-3 text-uppercase font-monospace" style="font-size: 0.72rem;">
+            <i class="bi bi-stars text-warning me-1"></i> Grounded AI Travel Intelligence
+          </span>
+          <h2 class="display-6 fw-bold font-serif mb-3">Ask GlobeTrek AI for Tailored Travel &amp; Ticketing Advice</h2>
+          <p class="text-white-75 lead mb-4" style="font-size: 1.05rem;">
+            Ask questions in <strong>English</strong>, <strong>हिन्दी (Hindi)</strong>, <strong>ಕನ್ನಡ (Kannada)</strong>, or <strong>తెలుగు (Telugu)</strong>. Inquire about actual pricing, seat availability, family-friendly destinations, or custom multi-day itineraries.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-teal rounded-pill px-4 py-2.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#chatModal">
+              <i class="bi bi-chat-dots-fill me-1"></i> Start Conversational Booking
+            </button>
+            <a href="{{ url_for('main.destinations') }}" class="btn btn-outline-light rounded-pill px-4 py-2.5">
+              Browse Landmark Directory
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center">
+          <div class="p-4 bg-white bg-opacity-10 rounded-4 backdrop-blur border border-white border-opacity-10 text-start">
+            <small class="text-teal fw-bold d-block mb-2 font-monospace">TRY ASKING:</small>
+            <p class="small text-white-75 mb-2 fst-italic">"Suggest museums in Paris under ₹2500."</p>
+            <p class="small text-white-75 mb-2 fst-italic">"When is Coldplay playing in London?"</p>
+            <p class="small text-white-75 mb-0 fst-italic">"Plan a 3-day budget trip in India."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- HOW IT WORKS & TRUST PILLARS                                              -->
+<!-- ========================================================================= -->
+<section class="py-5 bg-white border-top">
+  <div class="container py-3">
+    <div class="text-center max-w-xl mx-auto mb-5">
+      <span class="text-teal fw-bold text-uppercase small font-monospace">Seamless Process</span>
+      <h2 class="fw-bold text-navy font-serif">How GlobeTrek AI Works</h2>
+      <p class="text-muted small">From natural-language discovery to secure gate turnstile admission</p>
+    </div>
+
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="user-avatar rounded-circle bg-teal text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+            <i class="bi bi-compass"></i>
+          </div>
+          <h5 class="fw-bold text-navy mb-2">1. Discover &amp; Select</h5>
+          <p class="text-muted small mb-0">Search worldwide destinations or stadiums by date, location, category, or budget using conversational AI.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="user-avatar rounded-circle bg-orange text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <h5 class="fw-bold text-navy mb-2">2. 10-Min Hold &amp; Pay</h5>
+          <p class="text-muted small mb-0">Seats are temporarily locked with atomic zero-oversell database protection while you complete verified payment.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="user-avatar rounded-circle bg-navy text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+            <i class="bi bi-qr-code-scan"></i>
+          </div>
+          <h5 class="fw-bold text-navy mb-2">3. Instant Digital Passes</h5>
+          <p class="text-muted small mb-0">Receive cryptographically signed HMAC-SHA256 digital tickets with QR codes ready for turnstile entry.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Revenue Analytics – Organizer Portal{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <h2 class="fw-bold font-serif mb-1">Financial &amp; Revenue Analytics</h2>
+    <p class="text-white-50 small mb-0">Track gross ticket proceeds and sales velocity by event</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <small class="text-muted d-block fw-semibold" style="font-size: 0.72rem;">TOTAL CONFIRMED PROCEEDS</small>
+        <h2 class="fw-bold text-teal mb-0 mt-1 font-monospace">₹{{ "%.2f"|format(total_revenue) }}</h2>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <small class="text-muted d-block fw-semibold" style="font-size: 0.72rem;">PAID TICKETS ISSUED</small>
+        <h2 class="fw-bold text-navy mb-0 mt-1 font-monospace">{{ total_bookings }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <h5 class="fw-bold text-navy font-serif mb-3">Revenue Breakdown by Event</h5>
+    {% if revenue_by_event %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light small text-muted">
+            <tr>
+              <th>Event Title</th>
+              <th class="text-center">Paid Orders</th>
+              <th class="text-end">Gross Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in revenue_by_event %}
+              <tr>
+                <td><strong class="text-dark small">{{ r.title }}</strong></td>
+                <td class="text-center font-monospace">{{ r.booking_count }}</td>
+                <td class="text-end font-monospace fw-bold text-teal">₹{{ "%.2f"|format(r.revenue) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <p class="small mb-0">No confirmed sales data to report at this time.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

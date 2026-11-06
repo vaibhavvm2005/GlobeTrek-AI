@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Explore Tourist Destinations – GlobeTrek AI{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 mb-4">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+      <div>
+        <h2 class="fw-bold font-serif mb-1">Global Destinations &amp; Landmarks</h2>
+        <p class="text-white-50 small mb-0">Discover and book verified entry tickets to top wonders, museums, and national parks</p>
+      </div>
+      <nav aria-label="breadcrumb" class="mt-2 mt-md-0">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active text-teal" aria-current="page">Destinations</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px; z-index: 10;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-navy mb-0"><i class="bi bi-funnel me-1 text-teal"></i> Filters</h5>
+          <a href="{{ url_for('main.destinations') }}" class="small text-muted text-decoration-none">Reset</a>
+        </div>
+
+        <form action="{{ url_for('main.destinations') }}" method="GET">
+          <!-- Keyword -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Keyword Search</label>
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="Landmark or city..." value="{{ filters.q or '' }}">
+          </div>
+
+          <!-- Country -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Country</label>
+            <select name="country" class="form-select form-select-sm">
+              <option value="">All Countries</option>
+              {% for c in countries %}
+                <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Category</label>
+            <select name="category" class="form-select form-select-sm">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if filters.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Max Budget (₹)</label>
+            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="e.g. 5000" value="{{ filters.max_price or '' }}">
+          </div>
+
+          <!-- Sort Order -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-dark">Sort By</label>
+            <select name="sort" class="form-select form-select-sm">
+              <option value="popular" {% if filters.sort == 'popular' %}selected{% endif %}>Most Popular / Rating</option>
+              <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+              <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>Alphabetical (A-Z)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-teal btn-sm w-100 rounded-pill py-2">
+            Apply Filters
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">Showing <strong>{{ destinations.items|length }}</strong> destinations</span>
+      </div>
+
+      {% if destinations.items %}
+        <div class="row g-4">
+          {% for dest in destinations.items %}
+            <div class="col-md-6">
+              <div class="card card-hover h-100 bg-white">
+                <div class="card-img-placeholder">
+                  {% set img_list = dest.to_dict().images %}
+                  {% if img_list and img_list|length > 0 %}
+                    <img src="{{ img_list[0] }}" alt="{{ dest.name }}" loading="lazy">
+                  {% else %}
+                    <div class="text-white display-4 fw-bold font-serif">{{ dest.name[:1] }}</div>
+                  {% endif %}
+                  <span class="position-absolute top-0 end-0 m-3 badge bg-white text-dark shadow-sm">
+                    <i class="bi bi-star-fill text-warning me-1"></i> {{ dest.rating }}
+                  </span>
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                  <div class="d-flex align-items-center gap-1.5 text-muted small mb-1.5">
+                    <i class="bi bi-geo-alt-fill text-teal"></i>
+                    <span>{{ dest.city }}, {{ dest.country }}</span>
+                  </div>
+                  <h5 class="fw-bold text-navy font-serif mb-2">{{ dest.name }}</h5>
+                  <p class="text-muted small mb-3 flex-grow-1">{{ dest.description[:110] }}...</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                    <div>
+                      <small class="text-muted d-block" style="font-size: 0.72rem;">Tickets from</small>
+                      <strong class="text-dark font-monospace fs-5">₹{{ "%.0f"|format(dest.ticket_price) }}</strong>
+                    </div>
+                    <a href="{{ url_for('main.destination_detail', id=dest.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">
+                      View Details <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if destinations.pages > 1 %}
+          <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+              {% if destinations.has_prev %}
+                <li class="page-item">
+                  <a class="page-link text-teal" href="{{ url_for('main.destinations', page=destinations.prev_num, **filters) }}">Previous</a>
+                </li>
+              {% endif %}
+              
+              {% for p in range(1, destinations.pages + 1) %}
+                <li class="page-item {% if p == destinations.page %}active{% endif %}">
+                  <a class="page-link {% if p == destinations.page %}bg-teal border-teal text-white{% else %}text-teal{% endif %}"
+                     href="{{ url_for('main.destinations', page=p, **filters) }}">{{ p }}</a>
+                </li>
+              {% endfor %}
+
+              {% if destinations.has_next %}
+                <li class="page-item">
+                  <a class="page-link text-teal" href="{{ url_for('main.destinations', page=destinations.next_num, **filters) }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+          <div class="display-4 text-muted mb-3"><i class="bi bi-geo-alt"></i></div>
+          <h4 class="fw-bold text-navy">No destinations matched your criteria</h4>
+          <p class="text-muted small mb-4">Try clearing one or more filters or explore different keywords.</p>
+          <div>
+            <a href="{{ url_for('main.destinations') }}" class="btn btn-teal rounded-pill px-4">Clear All Filters</a>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
